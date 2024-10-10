@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=62", "setuptools_scm>8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jonas"
+dependencies = [
+    "annotated-types==0.7.0",
+    "casanova==2.0.2",
+    "certifi==2024.8.30",
+    "charset-normalizer==3.3.2",
+    "click==8.1.7",
+    "duckdb==1.1.1",
+    "ebbe==1.13.2",
+    "idna==3.10",
+    "iniconfig==2.0.0",
+    "lxml==5.3.0",
+    "markdown-it-py==3.0.0",
+    "mdurl==0.1.2",
+    "packaging==24.1",
+    "pluggy==1.5.0",
+    "pydantic==2.9.2",
+    "pydantic_core==2.23.4",
+    "Pygments==2.18.0",
+    "pytest==8.3.3",
+    "requests==2.32.3",
+    "rich==13.9.2",
+    "typing_extensions==4.12.2",
+    "ural==1.4.0",
+    "urllib3==2.2.3"
+]
+dynamic = ["version"]
+
+[tool.setuptools]
+packages = ["src"]
+
+[tool.setuptools.dynamic]
+version = {attr = "src.VERSION"}
+
+[tool.setuptools_scm]
+# Leave empty for the dynamic version metadata
+
+[project.scripts]
+jonas = "src.main:cli"
+
+[tool.pytest.ini_options]
+testpaths = ["src"]
+addopts = "-v -ra -q --doctest-modules"
+log_cli = true
+log_cli_level = "INFO"
+log_format = "%(asctime)s %(levelname)s %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
+minversion = "6.0"
+filterwarnings = "ignore"
+# Specify a custom directory for pytest cache
+cache_dir = ".pytest_cache"
