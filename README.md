@@ -11,7 +11,7 @@ Scrape information in Jonas's database.
 
 ## Run Program
 
-```shell
+```console
 $ jonas scrape manuscripts -i INFILE -c COLUMN -f DB_FILE
 ```
 
@@ -67,8 +67,14 @@ DuckDB database file: results/corpus.db
 
 If you prefer looking at all the data all at once, in a human-readable way, you can write the database's results to a JSON file.
 
-```shell
+```console
 $ jonas dump manuscripts -f DB_FILE -o OUTFILE
+╭────────── Writing results ──────────╮
+│                                     │
+│ to file: 'results/manuscripts.json' │
+│                                     │
+╰─────────────────────────────────────╯
+⠇ 0:00:00
 ```
 
 ```json
