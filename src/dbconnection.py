@@ -2,7 +2,7 @@ from pathlib import Path
 
 import duckdb
 
-from src.datamodels import ExternalLink, Manuscript, Witness
+from src.datamodels import ExternalLink, Manuscript, Witness, Work
 
 
 def parse_connection_file(fp: str | Path) -> duckdb.DuckDBPyConnection:
@@ -16,10 +16,15 @@ class Table:
         self.conn = conn
         self.name = table_name
         self.columns = conn.table(table_name).columns
-        self.update_columns = [c for c in self.columns if c != pk]
+        primary_keys = [k.strip() for k in pk.split(",")]
+        self.update_columns = [c for c in self.columns if c not in primary_keys]
         self.pk = pk
         self.update_statement = ", ".join(
-            [f"{c} = EXCLUDED.{c}" for c in self.update_columns]
+            [
+                f"{c} = COALESCE(EXCLUDED.{c}, {c})"
+                for c in self.update_columns
+                if self.update_columns
+            ]
         )
 
     def iter_rows(self):
@@ -40,7 +45,8 @@ class Table:
             return False
 
     def insert(self, row: dict, do_nothing: bool = False) -> None:
-        v_string = ", ".join(["?" for _ in row.values()])
+        values = list(row.values())
+        v_string = ", ".join(["?" for _ in values])
         c_string = ", ".join(row.keys())
         if not do_nothing:
             query = f"""
@@ -55,16 +61,23 @@ class Table:
     VALUES ({v_string})
     ON CONFLICT DO NOTHING
             """
-        self.conn.execute(query=query, parameters=list(row.values()))
+        try:
+            self.conn.execute(query=query, parameters=values)
+        except Exception as e:
+            print(query)
+            print(values)
+            raise e
 
 
 class Database:
     def __init__(self, persistent_file: str | Path, restart: bool) -> None:
         self.conn = parse_connection_file(fp=persistent_file)
+
+        # Main tables
         self.witnesses = self.create_table(
             table_name="Witness",
             columns=[n for n in Witness.__annotations__],
-            pk="href, manuscript_url",
+            pk="work_url, document_url",
             drop=restart,
         )
         self.manuscripts = self.create_table(
@@ -79,11 +92,30 @@ class Database:
             pk="link",
             drop=restart,
         )
+        self.works = self.create_table(
+            table_name="Works",
+            columns=[n for n in Work.__annotations__],
+            pk="url",
+            drop=restart,
+        )
 
+        # Relational tables
         self.manuscript_references = self.create_table(
             table_name="ManuscriptReferences",
             columns=["manuscript_url", "external_link"],
             pk="manuscript_url, external_link",
+            drop=restart,
+        )
+        self.work_references = self.create_table(
+            table_name="WorkReferences",
+            columns=["work_url", "external_link"],
+            pk="work_url, external_link",
+            drop=restart,
+        )
+        self.work_witnesses = self.create_table(
+            table_name="WorkWitnesses",
+            columns=["work_url", "document_url"],
+            pk="work_url, document_url",
             drop=restart,
         )
 

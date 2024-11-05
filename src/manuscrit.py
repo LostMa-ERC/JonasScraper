@@ -1,24 +1,17 @@
 import re
 
-import requests
 from lxml import html
 
 from src.datamodels import ExternalLink, Manuscript, Witness
 
 
-class JonasPage:
-    def __init__(self, url: str) -> None:
+class ManuscriptPage:
+    def __init__(self, url: str, html: html.Element) -> None:
         self.url = url
-        self.html = self.request_page(url)
+        self.html = html
         self.witnesses = self.list_temoins(jonas_url=url)
         self.manuscript = self.get_manuscript_details()
         self.links = self.get_links()
-
-    def request_page(self, url: str) -> html.HtmlElement:
-        response = requests.get(url)
-        byte_data = response.content
-        source_code = html.fromstring(byte_data)
-        return source_code
 
     def clean_text(self, text: str) -> str:
         s = re.sub(pattern=r"\s{2,}", repl=" ", string=text)
@@ -38,42 +31,38 @@ class JonasPage:
             return self.clean_text(text_content)
 
     @staticmethod
+    def clean_work_url(path: str) -> str:
+        id = path.split("=")[-1]
+        return f"http://jonas.irht.cnrs.fr/oeuvre/{id}"
+
+    @staticmethod
     def complete_url_path(path: str) -> str:
         return "https://jonas.irht.cnrs.fr/" + path.removeprefix("../../")
 
     def list_temoins(self, jonas_url: str) -> list[Witness]:
         witness_xpath = '//div[@class="un_temoin"]'
-        author_path = './/span[@class="auteur"]'
-        title_path = './/span[@class="titre"]'
         pages_path = './/div[@class="reperage"]/div[1]'
         work_path = ".//a[@href]"
         witnesses = self.list_xpath(xpath=witness_xpath)
         results = []
         for witness in witnesses:
-            author = self.get_text(root=witness, path=author_path)
-            title = self.get_text(root=witness, path=title_path)
             relative_path = witness.xpath(work_path)[0].get("href")
-            work = self.complete_url_path(relative_path)
+            work = self.clean_work_url(relative_path)
             pages = witness.xpath(pages_path)
             if pages is not None:
                 page_text = self.clean_text(pages[0].text)
                 results.append(
                     Witness(
-                        href=work,
-                        author=author,
-                        title=title,
+                        work_url=work,
                         pages=page_text,
                         manuscript_url=jonas_url,
+                        siglum=None,
                     )
                 )
             else:
                 results.append(
                     Witness(
-                        href=work,
-                        author=author,
-                        title=title,
-                        pages=None,
-                        manuscript_url=jonas_url,
+                        work_url=work, pages=None, manuscript_url=jonas_url, siglum=None
                     )
                 )
         return results

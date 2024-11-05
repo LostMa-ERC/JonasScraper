@@ -3,11 +3,10 @@ from dataclasses import dataclass
 
 @dataclass
 class Witness:
-    href: str
-    author: str
-    title: str
+    work_url: str
+    document_url: str
     pages: str
-    manuscript_url: str
+    siglum: str
 
 
 @dataclass
@@ -22,3 +21,21 @@ class Manuscript:
 class ExternalLink:
     link: str
     source: str
+
+
+@dataclass
+class Work:
+    url: str
+    title: str
+    author: str
+    incipit: str
+    form: str
+    date: str
+    language: str
+    n_verses: int
+    meter: str
+    rhyme_scheme: str
+    scripta: str
+    keyword_p0: str
+    keyword_p1: str
+    keyword_e2: str

@@ -1,6 +1,8 @@
 import click
 
-from src.manuscripts import dump_manuscripts, scrape_manuscripts
+from src.dump import dump_manuscripts
+from src.params import get_urls
+from src.scrape import Scraper
 
 from .__version__ import __identifier__
 
@@ -11,9 +13,41 @@ def cli():
     pass
 
 
-@cli.group
-def scrape():
-    pass
+# -------------------------------
+# Scraping Command
+# -------------------------------
+@cli.command("scrape")
+@click.option("-u", "--url", type=click.STRING)
+@click.option(
+    "-i",
+    "--infile",
+    type=click.Path(exists=True),
+)
+@click.option(
+    "-c",
+    "--column-name",
+    type=click.STRING,
+)
+@click.option(
+    "-d",
+    "--database",
+    type=click.STRING,
+    default=":memory:",
+)
+@click.option("--restart", is_flag=True, show_default=True, default=False)
+@click.option("--redo", is_flag=True, show_default=True, default=False)
+def scrape_command(url, infile, column_name, database, restart, redo):
+    urls = get_urls(url=url, infile=infile, column_name=column_name)
+    scraper = Scraper(
+        urls=urls,
+        database=database,
+        restart=restart,
+        redo=redo,
+    )
+    scraper.run()
+
+
+# -------------------------------
 
 
 @cli.group
@@ -26,16 +60,6 @@ def dump():
 @click.option("-o", "--outfile")
 def dump_manuscript_command(database, outfile):
     dump_manuscripts(database, outfile)
-
-
-@scrape.command("manuscripts")
-@click.option("-i", "--infile", type=click.Path(exists=True), required=True)
-@click.option("-c", "--column-name", type=click.STRING, required=True)
-@click.option("-f", "--database", required=True)
-@click.option("--restart", is_flag=True, show_default=True, default=False)
-@click.option("--redo", is_flag=True, show_default=True, default=False)
-def scrape_manuscripts_command(infile, column_name, database, restart, redo):
-    scrape_manuscripts(infile, column_name, database, restart, redo)
 
 
 if __name__ == "__main__":
