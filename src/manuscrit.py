@@ -2,7 +2,7 @@ import re
 
 from lxml import html
 
-from src.datamodels import ExternalLink, Manuscript, Witness
+from src.datamodels import ExternalLink, Document, Witness
 
 
 class ManuscriptPage:
@@ -55,7 +55,7 @@ class ManuscriptPage:
                     Witness(
                         work_url=work,
                         pages=page_text,
-                        manuscript_url=jonas_url,
+                        document_url=jonas_url,
                         siglum=None,
                     )
                 )
@@ -74,7 +74,7 @@ class ManuscriptPage:
             links.append(ExternalLink(link=link.get("href"), source=link.text))
         return links
 
-    def get_manuscript_details(self) -> Manuscript:
+    def get_manuscript_details(self) -> Document:
         identification_table_path = '//div[@id="identification"]/div[@class="bloccontenu"]/table[1]//tr[@class="principal"]'
         exemplar = None
         date = None
@@ -91,7 +91,7 @@ class ManuscriptPage:
                 elif "Langue" in title:
                     language_principal = data
 
-        return Manuscript(
+        return Document(
             url=self.url,
             exemplar=exemplar,
             date=date,

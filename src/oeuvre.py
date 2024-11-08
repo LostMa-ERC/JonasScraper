@@ -15,7 +15,7 @@ class WorkPage:
     def get_work(self) -> Work:
         # Identification table for the Work
         id_table = HtmlTable(root=self.html, table_class="table_identification")
-        if not id_table.table:
+        if not id_table.table is not None:
             return
         title = id_table.find_td("Titre")
         author = id_table.find_td("Auteur")

@@ -1,141 +1,158 @@
 # Jonas Manuscript Scraper
 
-Scrape information in Jonas's database.
+Scrape information from Jonas's online database.
+
+- [Get started](#install-program)
+- [Scrape URLs](#run-program)
+- [Export output](#export-output)
 
 ## Install Program
 
-1. Clone the repository (aka download the software's files) : `git clone git@github.com:LostMa-ERC/JonasScraper.git`
+1. Clone this repository (aka download the software's files) : `git clone git@github.com:LostMa-ERC/JonasScraper.git`
 2. Create and activate a virtual Python environment: version 3.12.
-3. Install the tool : `pip install .`
+3. Install this tool : `pip install .`
 4. Test the installation : `jonas --version`
 
 ## Run Program
 
+Users can [scrape a single URL](#single-url), directly from the command line, or a [batch of URLs](#csv-batch) in a CSV.
+
+Because webpages of works and manuscripts from Jonas contain links to multiple other entities, such as witnesses, it is recommended to save the SQL database that the program creates internally to a persistent file. This also allows you to do the following:
+
+1. Stop and restart the data collection without redoing URLs the program already scraped and saved in the database.
+
+2. Access all the information after scraping more than one URL.
+
+### Single URL
+
+To scrape a single URL from the command line, run the following command:
+
 ```console
-$ jonas scrape manuscripts -i INFILE -c COLUMN -f DB_FILE
+jonas scrape -u URL
 ```
 
-- `-i` `--infile` : a path to the CSV file
+The screen will clear, and display the progress as well as the results.
 
-- `-c` `--column-name` : the name of the column in the CSV file that contains the Jonas URLs 
+```console
+─────────────────────────────────────────────────────────────── Scraping Jonas ────────────────────────────────────────────────────────────────╮
+│                                                                                                                                               │
+│                                                 URL: 'http://jonas.irht.cnrs.fr/oeuvre/10453'                                                 │
+│                                                                                                                                               │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+Witnesses: 0    |       Works: 0
+        
+Requesting URL  http://jonas.irht.cnrs.fr/oeuvre/10453
+Witness(
+    work_url='http://jonas.irht.cnrs.fr/oeuvre/10453',
+    document_url='http://jonas.irht.cnrs.fr/manuscrit/72281',
+    pages='Folio 62r - 64r',
+    siglum=None
+)
+Work(
+    url='http://jonas.irht.cnrs.fr/oeuvre/10453',
+    title='Sermon joyeux de la vie saint Oignon',
+    author=None,
+    incipit='Ad deliberandum Patris / Sit Sanctorum Ongnonnaris',
+    form='vers',
+    date='15e-16e s.',
+    language='oil-français',
+    n_verses='126',
+    meter='Octosyllabes',
+    rhyme_scheme='rimes plates',
+    scripta=None,
+    keyword_p0='Personnages',
+    keyword_p1='Personnages',
+    keyword_e2='Brigitte de Suède'
+)
+Scraping ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1/1 0:00:07 0:00:00
 
-- `-f` `--database` : a path to a local DuckDB file, which contains or will contain the program's output (i.e. `./corpus.db`)
+```
 
-By progressively storing the scraped data in a database (local DuckDB file), the scraping can be stopped and restarted without redoing URLs already entered in the database. How? Before scraping a page, the program checks to see if that Jonas URL is already stored in the `Manuscript` table. If your database file already has that manuscript record (and presumably its linked data, though we don't check for that because verification would require scraping), the program moves on to the next URL.
+### CSV Batch
 
-The ability to resume the processing without redoing URLs can also be useful when you add information to your in-file CSV, i.e. add more Jonas URLs to your dataset. To continue scraping your dataset, run the program with the same file. What has already been processed in your evolving dataset will be skipped.
-
-If you want to update data already in your database file (i.e. you believe Jonas has updated their information), use the flag `--redo`.
-
-If you want to erase everything in your database and start from scratch, use the flag `--restart`. This will drop all the tables in your DuckDB file.
-
-## Input
-
-The in-file needs to be a CSV with a column containing the URL of a manuscript record in Jonas's online database. Before running the program, clean / prepare the URLs so they begin with the following string: `http://jonas.irht.cnrs.fr/manuscrit/`. It is Jonas's standard practice to format the URLs of their manuscript records with the aforementioned prefix, followed by an integer identifier, i.e. `http://jonas.irht.cnrs.fr/manuscrit/72924`.
+When scraping a batch of URLs, the in-file needs to be a CSV with a column containing the URL of a manuscript or work record in Jonas's online database. The column can contain both. The program will sort them accordingly.
 
 |jonas_url|
 |--|
 |http://jonas.irht.cnrs.fr/manuscrit/72924|
+|http://jonas.irht.cnrs.fr/oeuvre/10453|
 |http://jonas.irht.cnrs.fr/manuscrit/60326|
 
-
-## Output
-
-The scraping program finishes with a report printed in the console.
+Run the following command:
 
 ```console
-             Scraping Results              
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━┓
-┃ Unique values in 'clean_jonas_url' ┃ 524 ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━┩
-│              Jonas URLs (scraped)  │ 246 │
-│          Jonas URLs (found in DB)  │ 278 │
-│          Other URLs (not scraped)  │   0 │
-└────────────────────────────────────┴─────┘
-  Database Contents  
-┏━━━━━━━━━━━━┳━━━━━━┓
-┃      Table ┃ Rows ┃
-┡━━━━━━━━━━━━╇━━━━━━┩
-│ Manuscript │  524 │
-│    Witness │ 1444 │
-└────────────┴──────┘
-DuckDB database file: results/corpus.db
-
+jonas scrape -i CSV -c COLUMN -d DATABASE
 ```
 
-### Export Option 1
-
-If you prefer looking at all the data all at once, in a human-readable way, you can write the database's results to a JSON file.
+The screen will clear, and display the progress, but not the results. It is recommended to save the results to a database file using the option `-d`.
 
 ```console
-$ jonas dump manuscripts -f DB_FILE -o OUTFILE
-╭────────── Writing results ──────────╮
-│                                     │
-│ to file: 'results/manuscripts.json' │
-│                                     │
-╰─────────────────────────────────────╯
-⠇ 0:00:00
+╭─────────────────────────────────────────────────────────────── Scraping Jonas ────────────────────────────────────────────────────────────────╮
+│                                                                                                                                               │
+│                                                          0 Finished | 245 Unfinished                                                          │
+│                                                                                                                                               │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+┌────────────────────────────┬───────┐
+│          subject           │ total │
+│          varchar           │ int64 │
+├────────────────────────────┼───────┤
+│ Littérature didactique     │     2 │
+│ Arts, technique et métiers │     1 │
+│ Littérature narrative      │     1 │
+│ Littérature religieuse     │     1 │
+│ Littérature scientifique   │     1 │
+│ Personnages                │     1 │
+└────────────────────────────┴───────┘
+
+Witnesses: 501  | Works: 243    | Manuscripts: 2
+        
+Scraping ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 245/245 0:01:44 0:00:00
+
 ```
 
-```json
-{
-    "manuscripts": {
-        "http://jonas.irht.cnrs.fr/manuscrit/54777": {
-            "metadata": {
-                "url": "http://jonas.irht.cnrs.fr/manuscrit/54777",
-                "exemplar": "SAINT-ETIENNE, Bibliothèque municipale, MS ANC E286",
-                "date": "fin 13e-début 14e s.",
-                "language_principal": "oil-français"
-            },
-            "witnesses": [
-                {
-                    "href": "https://jonas.irht.cnrs.fr/consulter/oeuvre/detail_oeuvre.php?oeuvre=5136",
-                    "author": "Anonyme",
-                    "title": "Sept sages de Rome, version A",
-                    "pages": "Folio 1r - 15r"
-                },
-                {
-                    "href": "https://jonas.irht.cnrs.fr/consulter/oeuvre/detail_oeuvre.php?oeuvre=5135",
-                    "author": "Anonyme",
-                    "title": "Marques de Rome",
-                    "pages": "Folio 15r - 56r"
-                }
-            ],
-            "external_links": [
-                {
-                    "link": "https://mediatheques.saint-etienne.fr/Default/digital-viewer/c-1982076",
-                    "source": "Saint-Etienne-BM"
-                },
-                {
-                    "link": "https://arca.irht.cnrs.fr/ark:/63955/md33rv043r7x",
-                    "source": "Arca"
-                }
-            ]
-        },
-    }
-}
-```
+The header on the display shows the number of finished and unfinished URLs. This is calculated at the start of the program and compares the URLs given as input and those already in the database. In the case of a completely new database, as seen in the example above, there will be 0 finished.
 
-### Export Option 2
+### Program Output
 
-If you like working in SQL, you can download what's necessary to connect to the local DuckDB file that the program created. It links the data in the following way:
+While scraping, the program generates and stores the related information in a DuckDB SQL database. It links the data in the following way:
 
 ```mermaid
 erDiagram
 
-Witness {
-    string href
-    string author
+Work {
+    string url
     string title
-    string pages
-    string manuscript_url
+    string author
+    string incipit
+    string form
+    string date
+    string language
+    string n_verses
+    string meter
+    string rhyme_scheme
+    string scripta
+    string keyword_p0
+    string keyword_p1
+    string keyword_e2
 }
 
-Manuscript {
+Witness {
+    string work_url
+    string document_url
+    string pages
+    string siglum
+}
+
+Document {
     string url
     string exemplar
     string date
     string language_principal
+}
+
+WorkReferences {
+    string work_url
+    string external_link
 }
 
 ExternalLink {
@@ -143,17 +160,119 @@ ExternalLink {
     string source
 }
 
-ManuscriptReferences {
+DocumentReferences {
     string manuscript_url
     string external_link
 }
 
-Witness }|--|| Manuscript : ""
+Witness }|--|| Document : ""
 
-ExternalLink }|--|{ ManuscriptReferences : ""
+Witness }|--|| Work : ""
 
-Manuscript }|--|{ ManuscriptReferences : ""
+WorkReferences }|--|{ ExternalLink : ""
+
+DocumentReferences }|--|{ ExternalLink : ""
+
+Document }|--|{ DocumentReferences : ""
+
+Work }|--|{ WorkReferences : ""
 
 ```
 
-One `Manuscript` record can have multiple witnesses (`Witness` records) in it. And one `Manuscript` record can be associated to multiple `ExternalLink` records. To handle this cardinality, the relational table `ManuscriptReferences` is used.
+One `Document` record can have multiple witnesses (`Witness` records) in it. And one `Document` record can be associated to multiple `ExternalLink` records. To handle this cardinality, the relational table `DocumentReferences` is used.
+
+
+## Export Output
+
+Because the information is linked, you can export it from either the perspective of a work or a document (manuscript). Both subcommands (`dump works`, `dump manuscripts`) produce a JSON file.
+
+```console
+jonas dump works -f DATABASE -o OUTFILE
+```
+
+The output for the dump of works looks like the following:
+
+```json
+{
+    "works": {
+        "http://jonas.irht.cnrs.fr/oeuvre/13419": {
+            "metadata": {
+                "url": "http://jonas.irht.cnrs.fr/oeuvre/13419",
+                "title": "Ordonnance de l'office d'armes",
+                "author": null,
+                "incipit": "Il est vray selon les usaiges des philozophes que tous hommes doibvent naturellement desirer d'aprendre et de sçavoir",
+                "form": "prose",
+                "date": "15e s.",
+                "language": "oil-français",
+                "n_verses": null,
+                "meter": null,
+                "rhyme_scheme": null,
+                "scripta": null,
+                "keyword_p0": "Arts, technique et métiers",
+                "keyword_p1": "Arts, technique et métiers",
+                "keyword_e2": "Traités d'héraldique"
+            },
+            "witnesses": [
+                {
+                    "work_url": "http://jonas.irht.cnrs.fr/oeuvre/13419",
+                    "document_url": "http://jonas.irht.cnrs.fr/manuscrit/81690",
+                    "pages": "Folio 1r - 9r",
+                    "siglum": null
+                },
+                {
+                    "work_url": "http://jonas.irht.cnrs.fr/oeuvre/13419",
+                    "document_url": "http://jonas.irht.cnrs.fr/manuscrit/81691",
+                    "pages": "Folio 3r - 12r",
+                    "siglum": null
+                },
+                {
+                    "work_url": "http://jonas.irht.cnrs.fr/oeuvre/13419",
+                    "document_url": "http://jonas.irht.cnrs.fr/manuscrit/17605",
+                    "pages": "Folio 8r - 8v",
+                    "siglum": null
+                },
+            ],
+            "external_links": []
+        }
+    }
+}
+```
+
+The output for the dump of manuscripts looks like the following:
+
+```console
+jonas dump manuscripts -f DATABASE -o OUTFILE
+```
+
+```json
+{
+    "manuscripts": {
+            "http://jonas.irht.cnrs.fr/manuscrit/60326": {
+                "metadata": {
+                    "url": "http://jonas.irht.cnrs.fr/manuscrit/60326",
+                    "exemplar": "TOURS, Bibliothèque municipale, 0952",
+                    "date": null,
+                    "language_principal": null
+                },
+                "witnesses": [
+                    {
+                        "work_url": "http://jonas.irht.cnrs.fr/oeuvre/4100",
+                        "document_url": "http://jonas.irht.cnrs.fr/manuscrit/60326",
+                        "pages": "Folio 0 - 0",
+                        "siglum": null
+                    }
+                ],
+                "external_links": [
+                    {
+                        "link": "https://arca.irht.cnrs.fr/ark:/63955/md988g84pp5r",
+                        "source": "Arca"
+                    },
+                    {
+                        "link": "https://bibale.irht.cnrs.fr/53680",
+                        "source": "Bibale"
+                    }
+                ]
+            },
+    }
+}
+```

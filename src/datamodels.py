@@ -10,7 +10,7 @@ class Witness:
 
 
 @dataclass
-class Manuscript:
+class Document:
     url: str
     exemplar: str
     date: str

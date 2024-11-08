@@ -14,7 +14,7 @@ from rich.progress import (
 from rich.text import Text
 
 from src.dbconnection import Database
-from src.manuscrit import ManuscriptPage
+from src.manuscrit import ManuscriptPage, Document, Witness
 from src.oeuvre import WorkPage, Work
 
 
@@ -74,24 +74,27 @@ class Scraper:
         )
         self.console.print(task)
 
-    def scrape_manuscript(self, url: str, html: html.Element) -> None:
+    def scrape_manuscript(
+        self, url: str, html: html.Element
+    ) -> list[Witness, Document]:
         db = self.db
         # Scrape the page
         page = ManuscriptPage(html=html, url=url)
         # Into the database's manuscript table, insert the manuscript data
-        db.manuscripts.insert(page.manuscript.__dict__)
+        db.documents.insert(page.manuscript.__dict__)
         # Into the database's witness table, insert each witness
         for wit in page.witnesses:
             db.witnesses.insert(wit.__dict__)
         # For each external reference on the manuscript page,
         for ref in page.links:
             # Relate the link to the manuscript in the relational table
-            manuscript_ref_relation = {"manuscript_url": url, "external_link": ref.link}
-            db.manuscript_references.insert(manuscript_ref_relation, do_nothing=True)
+            manuscript_ref_relation = {"document_url": url, "external_link": ref.link}
+            db.document_references.insert(manuscript_ref_relation, do_nothing=True)
             # Insert the link in the links table
             db.links.insert(ref.__dict__)
+        return page.witnesses + [page.manuscript]
 
-    def scrape_work(self, url: str, html: html.Element):
+    def scrape_work(self, url: str, html: html.Element) -> list[Witness, Work]:
         db = self.db
         # Scrape the page
         page = WorkPage(html=html, url=url)
@@ -101,6 +104,7 @@ class Scraper:
             # Into the database's witnesses table, insert the work's witnesses
             for wit in page.witnesses:
                 db.witnesses.insert(wit.__dict__)
+        return page.witnesses + [page.work]
 
     def get_missing_urls(self) -> list:
         if self.redo:
@@ -109,7 +113,7 @@ class Scraper:
             urls = []
             for url in self.urls:
                 if self.MANUSCRIPT_BASE in url:
-                    if not self.db.manuscripts.has_key(url):
+                    if not self.db.documents.has_key(url):
                         urls.append(url)
                 elif self.WORK_BASE in url:
                     if not self.db.works.has_key(url):
@@ -129,11 +133,16 @@ class Scraper:
             self.console.print(rel)
         witnesses_table = self.db.conn.table(self.db.witnesses.name)
         n_w_rows, _ = witnesses_table.shape
-        t = f"""Witnesses: {n_w_rows}\t|\tWorks: {n_rows}
+        manuscript_table = self.db.conn.table(self.db.documents.name)
+        n_m_rows, _ = manuscript_table.shape
+        t = f"""Witnesses: {n_w_rows}\t| Works: {n_rows}\t| Documents: {n_m_rows}
         """
         self.console.print(Text(t, justify="center"))
 
     def run(self):
+        single_url = False
+        if len(self.urls) == 1:
+            single_url = True
         with Progress(
             TextColumn("{task.description}"), SpinnerColumn(), TimeElapsedColumn()
         ) as p:
@@ -155,12 +164,17 @@ class Scraper:
                 html_tree = self.request(url=url)
                 # If there was a connection error, move on
                 # (have user try again later when connection is better)
-                if not html_tree:
+                if not html_tree is not None:
                     continue
                 # Scrape manuscript page
                 if self.MANUSCRIPT_BASE in url:
-                    self.scrape_manuscript(html=html_tree, url=url)
+                    result = self.scrape_manuscript(html=html_tree, url=url)
                 # Scrape work page
                 elif self.WORK_BASE in url:
-                    self.scrape_work(html=html_tree, url=url)
+                    result = self.scrape_work(html=html_tree, url=url)
                 p.advance(task_id=t)
+            self.show_task()
+            self.count_work_types()
+            if single_url:
+                for r in result:
+                    self.console.print(r)

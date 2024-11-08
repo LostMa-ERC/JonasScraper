@@ -2,7 +2,7 @@ from pathlib import Path
 
 import duckdb
 
-from src.datamodels import ExternalLink, Manuscript, Witness, Work
+from src.datamodels import ExternalLink, Document, Witness, Work
 
 
 def parse_connection_file(fp: str | Path) -> duckdb.DuckDBPyConnection:
@@ -80,9 +80,9 @@ class Database:
             pk="work_url, document_url",
             drop=restart,
         )
-        self.manuscripts = self.create_table(
-            table_name="Manuscript",
-            columns=[n for n in Manuscript.__annotations__],
+        self.documents = self.create_table(
+            table_name="Document",
+            columns=[n for n in Document.__annotations__],
             pk="url",
             drop=restart,
         )
@@ -100,22 +100,16 @@ class Database:
         )
 
         # Relational tables
-        self.manuscript_references = self.create_table(
-            table_name="ManuscriptReferences",
-            columns=["manuscript_url", "external_link"],
-            pk="manuscript_url, external_link",
+        self.document_references = self.create_table(
+            table_name="DocumentReferences",
+            columns=["document_url", "external_link"],
+            pk="document_url, external_link",
             drop=restart,
         )
         self.work_references = self.create_table(
             table_name="WorkReferences",
             columns=["work_url", "external_link"],
             pk="work_url, external_link",
-            drop=restart,
-        )
-        self.work_witnesses = self.create_table(
-            table_name="WorkWitnesses",
-            columns=["work_url", "document_url"],
-            pk="work_url, document_url",
             drop=restart,
         )
 

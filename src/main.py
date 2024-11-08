@@ -1,8 +1,9 @@
 import click
 
-from src.dump import dump_manuscripts
-from src.params import get_urls
+from src.dump import dump_manuscripts, show_task, dump_works
+from src.params import Params
 from src.scrape import Scraper
+import json
 
 from .__version__ import __identifier__
 
@@ -32,15 +33,16 @@ def cli():
     "-d",
     "--database",
     type=click.STRING,
-    default=":memory:",
 )
 @click.option("--restart", is_flag=True, show_default=True, default=False)
 @click.option("--redo", is_flag=True, show_default=True, default=False)
 def scrape_command(url, infile, column_name, database, restart, redo):
-    urls = get_urls(url=url, infile=infile, column_name=column_name)
+    params = Params.from_click_args(
+        url=url, infile=infile, column_name=column_name, database=database
+    )
     scraper = Scraper(
-        urls=urls,
-        database=database,
+        urls=params.urls,
+        database=params.database,
         restart=restart,
         redo=redo,
     )
@@ -55,11 +57,24 @@ def dump():
     pass
 
 
+@dump.command("works")
+@click.option("-f", "--database", type=click.Path(exists=True), required=True)
+@click.option("-o", "--outfile", required=True)
+def dump_work_command(database, outfile):
+    show_task(outfile=outfile)
+    output = dump_works(database)
+    with open(outfile, mode="w", encoding="utf-8") as of:
+        json.dump(obj=output, fp=of, indent=4, ensure_ascii=False)
+
+
 @dump.command("manuscripts")
 @click.option("-f", "--database", type=click.Path(exists=True), required=True)
-@click.option("-o", "--outfile")
+@click.option("-o", "--outfile", required=True)
 def dump_manuscript_command(database, outfile):
-    dump_manuscripts(database, outfile)
+    show_task(outfile=outfile)
+    output = dump_manuscripts(database)
+    with open(outfile, mode="w", encoding="utf-8") as of:
+        json.dump(obj=output, fp=of, indent=4, ensure_ascii=False)
 
 
 if __name__ == "__main__":
