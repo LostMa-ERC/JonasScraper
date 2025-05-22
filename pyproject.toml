@@ -1,56 +1,58 @@
-[build-system]
-requires = ["setuptools>=62", "setuptools_scm>8"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name = "jonas"
-dependencies = [
-    "annotated-types==0.7.0",
-    "casanova==2.0.2",
-    "certifi==2024.8.30",
-    "charset-normalizer==3.3.2",
-    "click==8.1.7",
-    "duckdb==1.1.1",
-    "ebbe==1.13.2",
-    "idna==3.10",
-    "iniconfig==2.0.0",
-    "lxml==5.3.0",
-    "markdown-it-py==3.0.0",
-    "mdurl==0.1.2",
-    "packaging==24.1",
-    "pluggy==1.5.0",
-    "pydantic==2.9.2",
-    "pydantic_core==2.23.4",
-    "Pygments==2.18.0",
-    "pytest==8.3.3",
-    "requests==2.32.3",
-    "rich==13.9.2",
-    "typing_extensions==4.12.2",
-    "ural==1.4.0",
-    "urllib3==2.2.3"
+name = "jonas-scraper"
+version = "0.0.1"
+description = "Scraper of work and document content from the Jonas website."
+dynamic = [ "readme" ]
+license = { file = "LICENSE" }
+authors = [
+    {name = "Kelly Christensen", email = "kelly.christensen@chartes.psl.eu"}
 ]
-dynamic = ["version"]
+requires-python = ">=3.10"
+dependencies = [
+    "casanova>=2.0.2",
+    "click>=8.2.1",
+    "duckdb>=1.3.0",
+    "lxml>=5.4.0",
+    "pydantic>=2.11.4",
+    "rich>=13.9.2",
+    "ural>=1.5.0",
+]
 
-[tool.setuptools]
-packages = ["src"]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.setuptools.dynamic]
-version = {attr = "src.VERSION"}
+[tool.hatch.build.targets.wheel]
+    packages = ["src"]
 
-[tool.setuptools_scm]
-# Leave empty for the dynamic version metadata
+[dependency-groups]
+dev = [
+    "isort>=6.0.1",
+    "pytest>=8.3.5",
+    "pre-commit>=4.2.0",
+    "ruff>=0.11.10",
+    "uv>=0.7.5",
+    "pytest-xdist>=3.6.1",
+]
 
 [project.scripts]
-jonas = "src.main:cli"
+jonas = "src.__main__:cli"
+
+[tool.isort]
+profile = "black"
+line_length = 79
+src_paths = ["src", "tests"]
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/legacy/"
+publish-url = "https://test.pypi.org/legacy/"
 
 [tool.pytest.ini_options]
-testpaths = ["src"]
-addopts = "-v -ra -q --doctest-modules"
-log_cli = true
-log_cli_level = "INFO"
-log_format = "%(asctime)s %(levelname)s %(message)s"
-log_date_format = "%Y-%m-%d %H:%M:%S"
-minversion = "6.0"
-filterwarnings = "ignore"
-# Specify a custom directory for pytest cache
-cache_dir = ".pytest_cache"
+testpaths = ["tests", "src"]
+addopts = '--doctest-modules --doctest-glob="*.md"'
+doctest_optionflags = [
+    "ELLIPSIS",
+    "NORMALIZE_WHITESPACE",
+    "IGNORE_EXCEPTION_DETAIL"
+]
