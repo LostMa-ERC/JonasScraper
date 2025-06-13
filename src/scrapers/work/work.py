@@ -1,6 +1,6 @@
 from lxml import html
 
-from src.models.work import WorkModel
+from src.models.work import Work
 from src.scrapers.utils import Table, clean, parse_id
 
 
@@ -12,8 +12,8 @@ class WorkScraper:
         self.identification_table = self._get_identification_table(html=html)
         self.description_table = self._get_description_table(html=html)
 
-    def validate(self) -> WorkModel:
-        return WorkModel.model_validate(
+    def validate(self) -> Work:
+        return Work.model_validate(
             {
                 "id": self.id,
                 "title": self.title,

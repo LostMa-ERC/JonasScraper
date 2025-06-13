@@ -10,13 +10,15 @@ from rich.progress import (
     SpinnerColumn,
 )
 from rich.console import Console
+from rich.panel import Panel
+from rich.pretty import Pretty
 from pathlib import Path
 
 from src.database.connection import Connection, TABLES
 from src.parse_csv import parse_csv
 from src.pool import Requester
 from src.sorter import Sorter
-from src.models.work import WorkModel
+from src.models.work import Work
 
 # This name must match the package name ('name' kwarg) in the TOML file.
 __identifier__ = importlib.metadata.version("jonas-scraper")
@@ -37,10 +39,13 @@ def scrape_url(url: str):
     with Progress(TextColumn("{task.description}"), SpinnerColumn()) as p:
         _ = p.add_task("Scraping...")
         html = Requester.retrieve_html(url=url)
-        page, witnesses = sorter(url=url, html=html)
-        console.print(page)
-        for wit in witnesses:
-            console.print(wit)
+    page, witnesses = sorter(url=url, html=html)
+    # Print the page
+    console.print(Panel(Pretty(page)))
+    # Print the witnesses
+    console.rule("Witnesses")
+    for wit in witnesses:
+        console.print(Pretty(wit))
 
 
 # -------------------------------

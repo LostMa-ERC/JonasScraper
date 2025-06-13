@@ -2,14 +2,14 @@ from typing import Generator
 
 from lxml import html
 
-from src.models.witness import WitnessModel
+from src.models.witness import Witness
 from src.scrapers.utils import Table, parse_id
 
 
 def iterate_witnesses_from_document(
     doc_id: str,
     doc_html: html.Element,
-) -> Generator[WitnessModel, None, None]:
+) -> Generator[Witness, None, None]:
     for block in doc_html.xpath("//div[@class='un_temoin']"):
         wit = ManuscriptWitnessScraper(doc_id=doc_id, block=block)
         model = wit.model()
@@ -25,8 +25,8 @@ class ManuscriptWitnessScraper:
     def _get_table(self) -> Table:
         return Table(class_name="contenu_temoin", is_from_div=True, html=self._html)
 
-    def model(self) -> WitnessModel:
-        return WitnessModel(
+    def model(self) -> Witness:
+        return Witness(
             id=self.id,
             doc_id=self.doc_id,
             work_id=self.work_id,

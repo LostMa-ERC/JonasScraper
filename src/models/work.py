@@ -3,7 +3,7 @@ from typing import List
 from pydantic import BaseModel, Field
 
 
-class WorkModel(BaseModel):
+class Work(BaseModel):
     id: str
     title: str
     author: str | None = Field(default=None)

@@ -3,8 +3,8 @@ import ural
 from pydantic import BaseModel
 
 from src.database.connection import Connection
-from src.models.manuscript import ManuscriptModel
-from src.models.work import WorkModel
+from src.models.manuscript import Manuscript
+from src.models.work import Work
 from src.scrapers.manuscript import (
     ManuscriptScraper,
     iterate_witnesses_from_document,
@@ -20,9 +20,9 @@ class Sorter:
         id = parse_id(url)
         paths = ural.urlpathsplit(url)
         if "oeuvre" in paths:
-            url_type = WorkModel
+            url_type = Work
         elif "manuscrit" in paths:
-            url_type = ManuscriptModel
+            url_type = Manuscript
         else:
             url_type = None
         return id, url_type
@@ -62,7 +62,7 @@ class Sorter:
 
     def __call__(self, url: str, html: lxml.html.Element) -> None:
         id, record_type = self.parse_url(url=url)
-        if record_type == WorkModel:
+        if record_type == Work:
             return self.work_workflow(url=url, work_id=id, work_html=html)
-        elif record_type == ManuscriptModel:
+        elif record_type == Manuscript:
             return self.manuscript_workflow(url=url, doc_id=id, doc_html=html)

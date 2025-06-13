@@ -1,9 +1,9 @@
 import duckdb
 from pydantic import BaseModel
 
-from src.models.manuscript import ManuscriptModel
-from src.models.witness import WitnessModel
-from src.models.work import WorkModel
+from src.models.manuscript import Manuscript
+from src.models.witness import Witness
+from src.models.work import Work
 
 
 def get_duckdb_table_names(conn: duckdb.DuckDBPyConnection) -> list[str]:
@@ -11,9 +11,9 @@ def get_duckdb_table_names(conn: duckdb.DuckDBPyConnection) -> list[str]:
 
 
 TABLES = [
-    ("Work", WorkModel),
-    ("Witness", WitnessModel),
-    ("Manuscript", ManuscriptModel),
+    ("Work", Work),
+    ("Witness", Witness),
+    ("Manuscript", Manuscript),
 ]
 
 

@@ -1,6 +1,6 @@
 from lxml import html
 
-from src.models.manuscript import ManuscriptModel
+from src.models.manuscript import Manuscript
 from src.scrapers.utils import Table, parse_id, clean
 
 
@@ -12,8 +12,8 @@ class ManuscriptScraper:
         self.identification_table = self._get_identification_table(html=html)
         self.description_table = self._get_description_table(html=html)
 
-    def validate(self) -> ManuscriptModel:
-        return ManuscriptModel.model_validate(
+    def validate(self) -> Manuscript:
+        return Manuscript.model_validate(
             {
                 "id": self.id,
                 "exemplar": self.exemplar,

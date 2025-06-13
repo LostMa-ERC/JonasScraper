@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 
 
-class WitnessModel(BaseModel):
+class Witness(BaseModel):
     id: str
     doc_id: str
     work_id: str

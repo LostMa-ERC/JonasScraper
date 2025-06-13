@@ -27,8 +27,42 @@ Because webpages of works and manuscripts from Jonas contain links to multiple o
 
 To scrape a single URL from the command line, run the following command:
 
-```console
+```shell
 jonas url URL
+```
+
+In example:
+
+```console
+$ jonas url "https://jonas.irht.cnrs.fr/consulter/manuscrit/detail_manuscrit.php?projet=72048"
+Scraping... ⠏
+╭───────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ Manuscript(                                                                                                   │
+│     id='72048',                                                                                               │
+│     exemplar='Paris, Bibliothèque nationale de France, Manuscrits, nouv. acq. fr. 01158',                     │
+│     date='c. 1545-1550',                                                                                      │
+│     language=None                                                                                             │
+│ )                                                                                                             │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+─────────────────────────────────────────────────── Witnesses ───────────────────────────────────────────────────
+Witness(
+    id='temoin79902',
+    doc_id='72048',
+    work_id='3379',
+    date=None,
+    siglum=None,
+    status=None,
+    foliation='Folio 2r - 12v'
+)
+Witness(
+    id='temoin78974',
+    doc_id='72048',
+    work_id='3381',
+    date=None,
+    siglum=None,
+    status=None,
+    foliation='Folio 13r - 23r'
+)
 ```
 
 ### CSV Batch
