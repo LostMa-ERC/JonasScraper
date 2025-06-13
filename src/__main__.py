@@ -13,6 +13,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.pretty import Pretty
 from pathlib import Path
+from rich.table import Table
 
 from src.database.connection import Connection, TABLES
 from src.parse_csv import parse_csv
@@ -40,12 +41,45 @@ def scrape_url(url: str):
         _ = p.add_task("Scraping...")
         html = Requester.retrieve_html(url=url)
     page, witnesses = sorter(url=url, html=html)
-    # Print the page
+
+    # Print the scraped page's contents
     console.print(Panel(Pretty(page)))
-    # Print the witnesses
-    console.rule("Witnesses")
-    for wit in witnesses:
-        console.print(Pretty(wit))
+
+    # Complement the witness data
+    # Determine if the witnesses need document or work information
+    get_work_detail = False
+    if not isinstance(page, Work):
+        get_work_detail = True
+    # Store the additional witness data in an array
+    wit_table = Table()
+    wit_table.add_column("Witness")
+    # Make the new URLs to scrape
+    if get_work_detail:
+        wits = {
+            f"http://jonas.irht.cnrs.fr/oeuvre/{wit.work_id}": wit for wit in witnesses
+        }
+        wit_table.add_column("Work")
+    else:
+        wits = {
+            f"http://jonas.irht.cnrs.fr/manuscrit/{wit.doc_id}": wit
+            for wit in witnesses
+        }
+        wit_table.add_column("Manuscript")
+    with Progress(
+        TextColumn("{task.description}"),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TimeElapsedColumn(),
+        console=console,
+    ) as p:
+        wit_urls = list(wits.keys())
+        t = p.add_task("Fetching URLs...", total=len(wit_urls))
+        for url, html in Requester.pool_requests(urls=wit_urls, timeout=10):
+            page, _ = sorter(url=url, html=html)
+            wit_model = wits[url]
+            wit_table.add_row(Pretty(wit_model), Pretty(page))
+            p.advance(t)
+    console.print(wit_table)
 
 
 # -------------------------------

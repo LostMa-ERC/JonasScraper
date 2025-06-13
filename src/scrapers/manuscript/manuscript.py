@@ -40,7 +40,8 @@ class ManuscriptScraper:
             "tr[@class='principal']/td[@class='principal']/\
                 div[starts-with(@title, 'Exemplaire')]/span"
         )
-        return clean(span[0].text)
+        if span != []:
+            return clean(span[0].text)
 
     @property
     def date(self) -> str | None:

@@ -31,38 +31,75 @@ To scrape a single URL from the command line, run the following command:
 jonas url URL
 ```
 
-In example:
+In example (manuscript URL):
 
 ```console
-$ jonas url "https://jonas.irht.cnrs.fr/consulter/manuscrit/detail_manuscrit.php?projet=72048"
-Scraping... ⠏
+$ jonas url "http://jonas.irht.cnrs.fr/manuscrit/72035"
+Scraping... ⠧
 ╭───────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ Manuscript(                                                                                                   │
-│     id='72048',                                                                                               │
-│     exemplar='Paris, Bibliothèque nationale de France, Manuscrits, nouv. acq. fr. 01158',                     │
-│     date='c. 1545-1550',                                                                                      │
+│     id='72035',                                                                                               │
+│     exemplar='Paris, Bibliothèque nationale de France, Manuscrits, fr. 00842',                                │
+│     date=None,                                                                                                │
 │     language=None                                                                                             │
 │ )                                                                                                             │
 ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-─────────────────────────────────────────────────── Witnesses ───────────────────────────────────────────────────
-Witness(
-    id='temoin79902',
-    doc_id='72048',
-    work_id='3379',
-    date=None,
-    siglum=None,
-    status=None,
-    foliation='Folio 2r - 12v'
-)
-Witness(
-    id='temoin78974',
-    doc_id='72048',
-    work_id='3381',
-    date=None,
-    siglum=None,
-    status=None,
-    foliation='Folio 13r - 23r'
-)
+Fetching URLs... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 46/46 0:00:07
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Witness                           ┃ Work                                                                      ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ Witness(                          │ Work(                                                                     │
+│     id='temoin77336',             │     id='29538',                                                           │
+│     doc_id='72035',               │     title='Epitaphe de Guillaume Budé',                                   │
+│     work_id='29538',              │     author='Mellin de Saint-Gelais',                                      │
+│     date=None,                    │     incipit="Qui est ce corps qu'un si grand peuple suyt",                │
+│     siglum=None,                  │     form='vers',                                                          │
+│     status=None,                  │     date='peu après le 21 août 1540, date de la mort de Guillaume Budé',  │
+│     foliation='Folio 114r - 114r' │     language='oil-français',                                              │
+│ )                                 │     n_verses='8',                                                         │
+│                                   │     meter='Décasyllabes',                                                 │
+│                                   │     rhyme_scheme='ABABBCBC',                                              │
+│                                   │     scripta=None,                                                         │
+│                                   │     keywords=[],                                                          │
+│                                   │     links=[]                                                              │
+│                                   │ )                                                                         │
+```
+
+In example (work URL):
+
+```console
+jonas url "http://jonas.irht.cnrs.fr/oeuvre/29538"
+Scraping... ⠸
+╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ Work(                                                                                                       │
+│     id='29538',                                                                                             │
+│     title='Epitaphe de Guillaume Budé',                                                                     │
+│     author='Mellin de Saint-Gelais',                                                                        │
+│     incipit="Qui est ce corps qu'un si grand peuple suyt",                                                  │
+│     form='vers',                                                                                            │
+│     date='peu après le 21 août 1540, date de la mort de Guillaume Budé',                                    │
+│     language='oil-français',                                                                                │
+│     n_verses='8',                                                                                           │
+│     meter='Décasyllabes',                                                                                   │
+│     rhyme_scheme='ABABBCBC',                                                                                │
+│     scripta=None,                                                                                           │
+│     keywords=[],                                                                                            │
+│     links=[]                                                                                                │
+│ )                                                                                                           │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+Fetching URLs... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 9/9 0:00:05
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Witness                      ┃ Manuscript                                                                   ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ Witness(                     │ Manuscript(                                                                  │
+│     id='temoin105132',       │     id='84066',                                                              │
+│     doc_id='84066',          │     exemplar='Paris, Bibliothèque nationale de France, Manuscrits, Dupuy     │
+│     work_id='29538',         │ 843',                                                                        │
+│     date=None,               │     date=None,                                                               │
+│     siglum=None,             │     language='oil-français'                                                  │
+│     status=None,             │ )                                                                            │
+│     foliation='Page 68 - 68' │                                                                              │
+│ )                            │                                                                              │
 ```
 
 ### CSV Batch
