@@ -6,6 +6,8 @@ Scrape information from Jonas's online database.
 - [Scrape URLs](#run-program)
 - [Export output](#export-output)
 
+For a more guided tutorial, go to this [notebook](./demo.ipynb) and/or follow the link to [![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/LostMa-ERC/JonasScraper/blob/main/demo.ipynb)
+
 ## Install Program
 
 1. Clone this repository (aka download the software's files) : `git clone git@github.com:LostMa-ERC/JonasScraper.git`
