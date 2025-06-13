@@ -35,14 +35,18 @@ class Sorter:
         url: str,
         doc_id: str,
         doc_html: lxml.html.Element,
-    ) -> None:
+        insert_wits: bool = True,
+    ) -> tuple[BaseModel, list[BaseModel]]:
         content = ManuscriptScraper(url=url, html=doc_html)
         model = content.validate()
         self.conn.insert_model(table_name="Manuscript", data=model)
         wits = []
-        for wit in iterate_witnesses_from_document(doc_id=doc_id, doc_html=doc_html):
-            self.conn.insert_model(table_name="Witness", data=wit)
-            wits.append(wit)
+        if insert_wits:
+            for wit in iterate_witnesses_from_document(
+                doc_id=doc_id, doc_html=doc_html
+            ):
+                self.conn.insert_model(table_name="Witness", data=wit)
+                wits.append(wit)
         return model, wits
 
     def work_workflow(
@@ -50,19 +54,32 @@ class Sorter:
         url: str,
         work_id: str,
         work_html: lxml.html.Element,
-    ) -> None:
+        insert_wits: bool = True,
+    ) -> tuple[BaseModel, list[BaseModel]]:
         content = WorkScraper(url=url, html=work_html)
         model = content.validate()
         self.conn.insert_model(table_name="Work", data=model)
         wits = []
-        for wit in iterate_witnesses_from_work(work_id=work_id, work_html=work_html):
-            self.conn.insert_model(table_name="Witness", data=wit)
-            wits.append(wit)
+        if insert_wits:
+            for wit in iterate_witnesses_from_work(
+                work_id=work_id, work_html=work_html
+            ):
+                self.conn.insert_model(table_name="Witness", data=wit)
+                wits.append(wit)
         return model, wits
 
-    def __call__(self, url: str, html: lxml.html.Element) -> None:
+    def __call__(
+        self,
+        url: str,
+        html: lxml.html.Element,
+        insert_wits: bool = True,
+    ) -> tuple[BaseModel, list[BaseModel]]:
         id, record_type = self.parse_url(url=url)
         if record_type == Work:
-            return self.work_workflow(url=url, work_id=id, work_html=html)
+            return self.work_workflow(
+                url=url, work_id=id, work_html=html, insert_wits=insert_wits
+            )
         elif record_type == Manuscript:
-            return self.manuscript_workflow(url=url, doc_id=id, doc_html=html)
+            return self.manuscript_workflow(
+                url=url, doc_id=id, doc_html=html, insert_wits=insert_wits
+            )

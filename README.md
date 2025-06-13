@@ -114,6 +114,15 @@ When scraping a batch of URLs, the in-file needs to be a CSV with a column conta
 
 Run the following command:
 
+```shell
+jonas scrape -i CSV -c COLUMN -o OUTDIR
+```
+
+In example:
+
 ```console
-jonas scrape -i CSV -c COLUMN -d DATABASE
+$ jonas scrape -i example.csv -c jonas_url -o output_example/
+Fetching URLs... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3/3 0:00:02
+Fetching discovered URLs... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11/11 0:00:03
+Find a list of witnesses in the file: './output_example/example_witnesses.csv'
 ```

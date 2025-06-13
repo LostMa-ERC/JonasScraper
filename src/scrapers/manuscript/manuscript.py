@@ -1,7 +1,7 @@
 from lxml import html
 
 from src.models.manuscript import Manuscript
-from src.scrapers.utils import Table, parse_id, clean
+from src.scrapers.utils import Table, clean, parse_id
 
 
 class ManuscriptScraper:
