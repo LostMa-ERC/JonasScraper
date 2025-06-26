@@ -115,7 +115,7 @@ def scrape_url(url: str, outfile: str):
 # -------------------------------
 # Scrape from CSV
 # -------------------------------
-@cli.command("scrape")
+@cli.command("file")
 @click.option(
     "-i",
     "--infile",
@@ -141,10 +141,29 @@ def scrape_command(infile, outdir, column_name):
     outfile = outdir.joinpath(f"{Path(infile).stem}_witnesses.csv")
     database = outdir.joinpath("jonas.db")
 
-    urls = parse_csv(infile=infile, column_name=column_name)
     conn = Connection(database_path=database)
     sorter = Sorter(conn=conn)
     console = Console()
+
+    urls_in_csv = parse_csv(infile=infile, column_name=column_name)
+    # Remove from CSV set of URLs those that have been scraped
+    done_works = [row[0] for row in conn._conn.sql('select id from "Work"').fetchall()]
+    done_manusripts = [
+        row[0] for row in conn._conn.sql("select id from Manuscript").fetchall()
+    ]
+    urls = []
+    for url in urls_in_csv:
+        item_id, url_type = sorter.parse_url(url=url)
+        # If the sorter's URL parser didn't work as expected, skip this URL
+        if not item_id:
+            continue
+        # If the Work URL isn't in the database, add it to the list to scrape
+        if url_type == Work and item_id not in done_works:
+            urls.append(url)
+        # If the Manuscript URL isn't in the database, add it to the list to scrape
+        elif url_type == Manuscript and item_id not in done_manusripts:
+            urls.append(url)
+
     with Progress(
         TextColumn("{task.description}"),
         BarColumn(),
