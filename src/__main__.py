@@ -13,6 +13,7 @@ from rich.progress import (
     SpinnerColumn,
     TextColumn,
     TimeElapsedColumn,
+    TimeRemainingColumn,
 )
 from rich.table import Table
 
@@ -97,7 +98,11 @@ def scrape_url(url: str, outfile: str):
         writer = casanova.writer(f, fieldnames=fieldnames)
         wit_urls = list(wits.keys())
         t = p.add_task("Fetching URLs...", total=len(wit_urls))
-        for url, html in Requester.pool_requests(urls=wit_urls, timeout=10):
+        for url, html in Requester.pool_requests(
+            urls=wit_urls,
+            timeout=10,
+            throttle=False,
+        ):
             page, _ = sorter(url=url, html=html)
             wit_model = wits[url]
             wit_table.add_row(Pretty(wit_model), Pretty(page))
@@ -169,12 +174,18 @@ def scrape_command(infile, outdir, column_name):
         BarColumn(),
         MofNCompleteColumn(),
         TimeElapsedColumn(),
+        TimeRemainingColumn(),
         console=console,
     ) as p:
+        count = 0
         t = p.add_task("Fetching URLs...", total=len(urls))
-        for url, html in Requester.pool_requests(urls=urls, timeout=10):
+        request = Requester(progress_bar=p)
+        for url, html in request.pool_requests(urls=urls):
             sorter(url=url, html=html)
             p.advance(t)
+            count += 1
+            if count % 20 == 0:
+                console.clear()
 
     query = """
 SELECT url, count(*) FROM (

@@ -2,31 +2,46 @@ import concurrent.futures
 import sys
 import time
 import urllib.request
+import urllib.error
 from typing import Generator
+from rich.progress import Progress
 
 from lxml import html
 
 
 class Requester:
-    @classmethod
-    def retrieve_html(
-        cls,
-        url: str,
-        timeout: int = 10,
+    def __init__(
+        self,
+        timeout: int = 50,
         throttle: bool = False,
-    ) -> html.HtmlElement:
-        if throttle:
+        progress_bar: Progress = None,
+    ):
+        self.timeout = timeout
+        self.throttle = throttle
+        self.p = progress_bar
+
+    def remove_task(self, url, t):
+        self.p.update(t, description=f"Scraping '{url}'", completed=1, visible=False)
+        self.p.remove_task(t)
+
+    def retrieve_html(self, url: str) -> html.HtmlElement:
+        if self.throttle:
             time.sleep(1)
         # Retrieve a single page and parse its HTML into an lxml.html Element
-        with urllib.request.urlopen(url, timeout=timeout) as conn:
-            return html.fromstring(conn.read())
+        if self.p:
+            t = self.p.add_task(f"Scraping '{url}'", total=1, visible=True, start=True)
+        try:
+            with urllib.request.urlopen(url, timeout=self.timeout) as conn:
+                self.remove_task(url=url, t=t)
+                return html.fromstring(conn.read())
+        except Exception as e:
+            self.remove_task(url=url, t=t)
+            raise e
 
-    @classmethod
     def pool_requests(
-        cls,
+        self,
         urls: list[str],
-        max_workers: int = 3,
-        timeout: int = 30,
+        max_workers: int = 10,
         max_errors: int = None,
     ) -> Generator[
         tuple[str, html.HtmlElement],
@@ -44,12 +59,12 @@ class Requester:
             else:
                 max_errors = 10
         error_count = 0
+
         # We can use a with statement to ensure threads are cleaned up promptly
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # Start the load operations and mark each future with its URL
+            # Start the scraping operations and mark each future with its URL
             future_url_index = {
-                executor.submit(cls.retrieve_html, url, timeout, True): url
-                for url in urls
+                executor.submit(self.retrieve_html, url): url for url in urls
             }
 
             for future in concurrent.futures.as_completed(future_url_index):
@@ -66,5 +81,12 @@ class Requester:
                         print("Too many errors. Exiting program...")
                         executor.shutdown(wait=True, cancel_futures=True)
                         sys.exit()
+                except urllib.error.URLError as e:
+                    if "The handshake operation timed out" in e.reason:
+                        print("The internet connection wasn't good enough.\n%s" % (e))
+                        executor.shutdown(wait=True, cancel_futures=True)
+                        sys.exit()
+                    else:
+                        raise e
                 else:
                     yield url, data
