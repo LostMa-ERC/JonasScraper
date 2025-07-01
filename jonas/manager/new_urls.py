@@ -1,7 +1,7 @@
-from src.models.manuscript import Manuscript
-from src.models.work import Work
-from src.parse_csv import parse_csv
-from src.utils import parse_url
+from jonas.models.manuscript import Manuscript
+from jonas.models.work import Work
+from jonas.parse_csv import parse_csv
+from jonas.utils import parse_url
 
 from .base import WorkFlowManager
 

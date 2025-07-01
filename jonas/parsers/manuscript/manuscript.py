@@ -1,8 +1,7 @@
+from jonas.models.manuscript import Manuscript
+from jonas.parsers.utils import Table, clean
+from jonas.utils import parse_id
 from lxml import html
-
-from src.models.manuscript import Manuscript
-from src.parsers.utils import Table, clean
-from src.utils import parse_id
 
 
 class ManuscriptScraper:

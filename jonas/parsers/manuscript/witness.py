@@ -1,10 +1,9 @@
 from typing import Generator
 
+from jonas.models.witness import Witness
+from jonas.parsers.utils import Table
+from jonas.utils import parse_id
 from lxml import html
-
-from src.models.witness import Witness
-from src.parsers.utils import Table
-from src.utils import parse_id
 
 
 def iterate_witnesses_from_document(

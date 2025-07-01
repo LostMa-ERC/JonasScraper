@@ -2,129 +2,98 @@
 
 Scrape information from Jonas's online database.
 
-- [Get started](#install-program)
-- [Scrape URLs](#run-program)
+- [Get started](#installation)
+- [Scrape URLs](#scrape)
 - [Export output](#export-output)
 
-For a more guided tutorial, go to this [notebook](./demo.ipynb) and/or follow the link to [![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/LostMa-ERC/JonasScraper/blob/main/demo.ipynb)
 
-## Install Program
+## Installation
 
 1. Clone this repository (aka download the software's files) : `git clone git@github.com:LostMa-ERC/JonasScraper.git`
 2. Create and activate a virtual Python environment: version 3.12.
 3. Install this tool : `pip install .`
 4. Test the installation : `jonas --version`
 
-## Run Program
+## Scrape
 
-Users can [scrape a single URL](#single-url), directly from the command line, or a [batch of URLs](#csv-batch) in a CSV.
+### Step 1.
 
-Because webpages of works and manuscripts from Jonas contain links to multiple other entities, such as witnesses, it is recommended to save the SQL database that the program creates internally to a persistent file. This also allows you to do the following:
+Scrape metadata from URLs provided in a column (i.e. `jonas_url`) of a CSV file (`example.csv`), progressively save it in a database file and, once finished, write the witnesses to a new CSV file in a directory (i.e. `output_example`).
 
-1. Stop and restart the data collection without redoing URLs the program already scraped and saved in the database.
+The URLs in the CSV file should be of a work (_oeuvre_) or manuscript (_manuscrit_). Prints (_imprimé_) are not supported. It is recommended that you clean the set of URLs.
 
-2. Access all the information after scraping more than one URL.
+- work's URL looks like this: `https://jonas.irht.cnrs.fr/oeuvre/15841`
+- manuscript's URL looks like this: `https://jonas.irht.cnrs.fr/manuscrit/60328`.
 
-### Single URL
-
-To scrape a single URL from the command line, run the following command:
-
-```shell
-jonas url URL
-```
-
-In example (manuscript URL):
-
-```console
-$ jonas url "http://jonas.irht.cnrs.fr/manuscrit/72035"
-Scraping... ⠧
-╭───────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ Manuscript(                                                                                                   │
-│     id='72035',                                                                                               │
-│     exemplar='Paris, Bibliothèque nationale de France, Manuscrits, fr. 00842',                                │
-│     date=None,                                                                                                │
-│     language=None                                                                                             │
-│ )                                                                                                             │
-╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-Fetching URLs... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 46/46 0:00:07
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Witness                           ┃ Work                                                                      ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ Witness(                          │ Work(                                                                     │
-│     id='temoin77336',             │     id='29538',                                                           │
-│     doc_id='72035',               │     title='Epitaphe de Guillaume Budé',                                   │
-│     work_id='29538',              │     author='Mellin de Saint-Gelais',                                      │
-│     date=None,                    │     incipit="Qui est ce corps qu'un si grand peuple suyt",                │
-│     siglum=None,                  │     form='vers',                                                          │
-│     status=None,                  │     date='peu après le 21 août 1540, date de la mort de Guillaume Budé',  │
-│     foliation='Folio 114r - 114r' │     language='oil-français',                                              │
-│ )                                 │     n_verses='8',                                                         │
-│                                   │     meter='Décasyllabes',                                                 │
-│                                   │     rhyme_scheme='ABABBCBC',                                              │
-│                                   │     scripta=None,                                                         │
-│                                   │     keywords=[],                                                          │
-│                                   │     links=[]                                                              │
-│                                   │ )                                                                         │
-```
-
-In example (work URL):
-
-```console
-jonas url "http://jonas.irht.cnrs.fr/oeuvre/29538"
-Scraping... ⠸
-╭─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ Work(                                                                                                       │
-│     id='29538',                                                                                             │
-│     title='Epitaphe de Guillaume Budé',                                                                     │
-│     author='Mellin de Saint-Gelais',                                                                        │
-│     incipit="Qui est ce corps qu'un si grand peuple suyt",                                                  │
-│     form='vers',                                                                                            │
-│     date='peu après le 21 août 1540, date de la mort de Guillaume Budé',                                    │
-│     language='oil-français',                                                                                │
-│     n_verses='8',                                                                                           │
-│     meter='Décasyllabes',                                                                                   │
-│     rhyme_scheme='ABABBCBC',                                                                                │
-│     scripta=None,                                                                                           │
-│     keywords=[],                                                                                            │
-│     links=[]                                                                                                │
-│ )                                                                                                           │
-╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-Fetching URLs... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 9/9 0:00:05
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Witness                      ┃ Manuscript                                                                   ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ Witness(                     │ Manuscript(                                                                  │
-│     id='temoin105132',       │     id='84066',                                                              │
-│     doc_id='84066',          │     exemplar='Paris, Bibliothèque nationale de France, Manuscrits, Dupuy     │
-│     work_id='29538',         │ 843',                                                                        │
-│     date=None,               │     date=None,                                                               │
-│     siglum=None,             │     language='oil-français'                                                  │
-│     status=None,             │ )                                                                            │
-│     foliation='Page 68 - 68' │                                                                              │
-│ )                            │                                                                              │
-```
-
-### CSV Batch
-
-When scraping a batch of URLs, the in-file needs to be a CSV with a column containing the URL of a manuscript or work record in Jonas's online database. The column can contain both. The program will sort them accordingly.
-
-|jonas_url|
-|--|
-|http://jonas.irht.cnrs.fr/manuscrit/72924|
-|http://jonas.irht.cnrs.fr/oeuvre/10453|
-|http://jonas.irht.cnrs.fr/manuscrit/60326|
-
-Run the following command:
+Run the `new-urls` command.
 
 ```shell
-jonas scrape -i CSV -c COLUMN -o OUTDIR
+$ jonas new-urls -i example.csv -c jonas_url -o output_example
 ```
-
-In example:
 
 ```console
-$ jonas scrape -i example.csv -c jonas_url -o output_example/
-Fetching URLs... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3/3 0:00:02
-Fetching discovered URLs... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11/11 0:00:03
-Find a list of witnesses in the file: './output_example/example_witnesses.csv'
+─────────── Results saved in database: 'output_example/jonas.db' ───────────
+works        [22]  **************************
+manuscripts  [ 6]  *******
+witnesses    [34]  ****************************************
+Total URLs ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 22/22 0:00:10 • 0:00:00
 ```
+
+### Step 2.
+
+The URLs provided in the `new-urls` command (see [Step 1](#step-1)) are either a work (_oeuvre_) or manuscript (_manuscrit_), and the command creates the relevant record in the database from the page's scraped metadata. Because work and manuscript pages present witnesses, the `new-urls` command also creates records in the relational witness table, which link works and manuscripts.
+
+The `supplement` command reviews all the witness records created in [Step 1](#step-1) and determines if there is complete metadata for both its associated work and manuscript. It will scrape the missing metadata.
+
+In the [example](./example.csv), as seen in [Step 1](#step-1), we have a list of 22 work URLs. There are 34 witnesses amongst those 22 works, and they are in 6 manuscripts. Because only the work pages' metadata was scraped, the `supplement` command collects the URLs of those 6 related manuscript pages and scrapes them.
+
+```shell
+$ jonas supplement -o output_example
+```
+
+```console
+─────────── Results saved in database: 'output_example/jonas.db' ───────────
+works        [22]  **************************
+manuscripts  [ 6]  *******
+witnesses    [34]  ****************************************
+Total URLs ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6/6 0:00:03 • 0:00:00
+
+View a list of witnesses in this CSV file: 'output_example/witnesses_1751380020.239669.csv'
+```
+
+id|work_url|ms_url|work_id|work_title|work_author|work_incipit|work_form|work_date|work_language|work_n_verses|work_meter|work_rhyme_scheme|work_scripta|work_keywords|work_links|witness_id|witness_doc_id|witness_work_id|witness_date|witness_siglum|witness_status|witness_foliation|manuscript_id|manuscript_exemplar|manuscript_date|manuscript_language
+|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--
+temoin36017|http://jonas.irht.cnrs.fr/oeuvre/10000|http://jonas.irht.cnrs.fr/manuscrit/72186|10000|Ballade|Oton de Grandson|Faitez de moy tout ce qu'il vous plaira|vers|2e moitié du 14e s.|oil-français|||||""||temoin36017|72186|10000|vers 1430|A|intégral|Folio 134r - 134v|72186|"Paris| Bibliothèque nationale de France| Manuscrits| fr. 02201"|15e s.|oil-français
+temoin36016|http://jonas.irht.cnrs.fr/oeuvre/10000|http://jonas.irht.cnrs.fr/manuscrit/72191|10000|Ballade|Oton de Grandson|Faitez de moy tout ce qu'il vous plaira|vers|2e moitié du 14e s.|oil-français|||||""||temoin36016|72191|10000|vers 1430|A|intégral|Folio 134r - 134v|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36018|http://jonas.irht.cnrs.fr/oeuvre/10001|http://jonas.irht.cnrs.fr/manuscrit/72186|10001|Ballade|Oton de Grandson|Je n'ay riens fait qu'amours ne me fait faire|vers|2e moitié du 14e s.|oil-français|||||""||temoin36018|72186|10001|vers 1430|A|intégral|Folio 135r - 135v|72186|"Paris| Bibliothèque nationale de France| Manuscrits| fr. 02201"|15e s.|oil-français
+temoin36019|http://jonas.irht.cnrs.fr/oeuvre/10001|http://jonas.irht.cnrs.fr/manuscrit/72191|10001|Ballade|Oton de Grandson|Je n'ay riens fait qu'amours ne me fait faire|vers|2e moitié du 14e s.|oil-français|||||""||temoin36019|72191|10001|vers 1430|A|intégral|Folio 135r - 135v|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36020|http://jonas.irht.cnrs.fr/oeuvre/10001|http://jonas.irht.cnrs.fr/manuscrit/71827|10001|Ballade|Oton de Grandson|Je n'ay riens fait qu'amours ne me fait faire|vers|2e moitié du 14e s.|oil-français|||||""||temoin36020|71827|10001|vers 1430|A|intégral|Folio 135r - 135v|71827|"Paris| Bibliothèque nationale de France| Manuscrits| Rothschild 2796 (432 a)"|milieu 15e s.|oil-français
+temoin36029|http://jonas.irht.cnrs.fr/oeuvre/10002|http://jonas.irht.cnrs.fr/manuscrit/72191|10002|Ballade|Oton de Grandson|A ce plaisant premier jour de l'annee|vers|2e moitié du 14e s.|oil-français|||||""||temoin36029|72191|10002|vers 1430|A|intégral|Folio 138r - 138v|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36030|http://jonas.irht.cnrs.fr/oeuvre/10003|http://jonas.irht.cnrs.fr/manuscrit/72191|10003|Ballade|Oton de Grandson|En grant deduit et en doulce plaisance|vers|2e moitié du 14e s.|oil-français|||||""||temoin36030|72191|10003|1826|||Folio 61r - 61r|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin61500|http://jonas.irht.cnrs.fr/oeuvre/10003|http://jonas.irht.cnrs.fr/manuscrit/75963|10003|Ballade|Oton de Grandson|En grant deduit et en doulce plaisance|vers|2e moitié du 14e s.|oil-français|||||""||temoin61500|75963|10003|1826|||Folio 61r - 61r|75963|"BESANCON| Bibliothèque municipale| 0556"|1826|oil-français
+temoin36032|http://jonas.irht.cnrs.fr/oeuvre/10004|http://jonas.irht.cnrs.fr/manuscrit/72191|10004|Rondeau|Oton de Grandson|"Bien appert| Belle| a vo bonté / Et a vostre maintenement"|vers|2e moitié du 14e s.|oil-français|||||""||temoin36032|72191|10004|1826|||Folio 61v - 61v|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin61501|http://jonas.irht.cnrs.fr/oeuvre/10004|http://jonas.irht.cnrs.fr/manuscrit/75963|10004|Rondeau|Oton de Grandson|"Bien appert| Belle| a vo bonté / Et a vostre maintenement"|vers|2e moitié du 14e s.|oil-français|||||""||temoin61501|75963|10004|1826|||Folio 61v - 61v|75963|"BESANCON| Bibliothèque municipale| 0556"|1826|oil-français
+temoin36033|http://jonas.irht.cnrs.fr/oeuvre/10005|http://jonas.irht.cnrs.fr/manuscrit/72191|10005|Ballade|Oton de Grandson|Car j'ay perdu ma jeunesse et ma joye|prose|2e moitié du 14e s.|oil-français|||||""||temoin36033|72191|10005|vers 1430|A|intégral|Folio 139r - 139v|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36034|http://jonas.irht.cnrs.fr/oeuvre/10006|http://jonas.irht.cnrs.fr/manuscrit/72191|10006|Rondeau|Oton de Grandson|Comment seroit que je fusse joieulx|vers|2e moitié du 14e s.|oil-français|||||""||temoin36034|72191|10006|vers 1430|A|intégral|Folio 139v - 140r|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36036|http://jonas.irht.cnrs.fr/oeuvre/10007|http://jonas.irht.cnrs.fr/manuscrit/72191|10007|Rondeau|Oton de Grandson|"Belle| pour hair faulceté / Et vous servir de cuer d'amy"|vers|2e moitié du 14e s.|oil-français|||||""||temoin36036|72191|10007|vers 1430||intégral|Folio 140v - 140v|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36041|http://jonas.irht.cnrs.fr/oeuvre/10008|http://jonas.irht.cnrs.fr/manuscrit/72191|10008|Rondeau|Oton de Grandson|Ce premier jour que l'an se renouvelle|vers|2e moitié du 14e s.|oil-français|||||""||temoin36041|72191|10008|vers 1430||intégral|Folio 142r - 142v|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36043|http://jonas.irht.cnrs.fr/oeuvre/10009|http://jonas.irht.cnrs.fr/manuscrit/72191|10009|Ballade|Oton de Grandson|En languissant defineront my jour|vers|2e moitié du 14e s.|oil-français|||||""||temoin36043|72191|10009|vers 1430||intégral|Folio 142v - 143r|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36045|http://jonas.irht.cnrs.fr/oeuvre/10010|http://jonas.irht.cnrs.fr/manuscrit/72193|10010|Ballade|Oton de Grandson|Pour mieulx garder de ma dame le fort|vers|2e moitié du 14e s.|oil-français|||||""||temoin36045|72193|10010|vers 1430|A|intégral|Folio 143r - 143v|72193|"PHILADELPHIA| University of Pennsylvania Library| Codex 0902"|vers 1390|oil-français
+temoin36044|http://jonas.irht.cnrs.fr/oeuvre/10010|http://jonas.irht.cnrs.fr/manuscrit/72191|10010|Ballade|Oton de Grandson|Pour mieulx garder de ma dame le fort|vers|2e moitié du 14e s.|oil-français|||||""||temoin36044|72191|10010|vers 1430|A|intégral|Folio 143r - 143v|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36047|http://jonas.irht.cnrs.fr/oeuvre/10011|http://jonas.irht.cnrs.fr/manuscrit/72191|10011|Ballade|Oton de Grandson|S'a ma cause perdoit sa bonne fame|vers|2e moitié du 14e s.|oil-français|||||""||temoin36047|72191|10011|vers 1430|A|intégral|Folio 143v - 144r|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36046|http://jonas.irht.cnrs.fr/oeuvre/10011|http://jonas.irht.cnrs.fr/manuscrit/72193|10011|Ballade|Oton de Grandson|S'a ma cause perdoit sa bonne fame|vers|2e moitié du 14e s.|oil-français|||||""||temoin36046|72193|10011|vers 1430|A|intégral|Folio 143v - 144r|72193|"PHILADELPHIA| University of Pennsylvania Library| Codex 0902"|vers 1390|oil-français
+temoin36048|http://jonas.irht.cnrs.fr/oeuvre/10012|http://jonas.irht.cnrs.fr/manuscrit/72191|10012|Ballade|Oton de Grandson|Quant je pense a vo doulce figure|vers|2e moitié du 14e s.|oil-français|||||""||temoin36048|72191|10012|vers 1430|A|intégral|Folio 144r - 144v|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36049|http://jonas.irht.cnrs.fr/oeuvre/10013|http://jonas.irht.cnrs.fr/manuscrit/72193|10013|Ballade|Oton de Grandson|"Se je m'en dueil| nul ne m'en doyt blasmer"|vers|2e moitié du 14e s.|oil-français|||||""||temoin36049|72193|10013|vers 1430|A|intégral|Folio 144v - 145r|72193|"PHILADELPHIA| University of Pennsylvania Library| Codex 0902"|vers 1390|oil-français
+temoin36050|http://jonas.irht.cnrs.fr/oeuvre/10013|http://jonas.irht.cnrs.fr/manuscrit/72191|10013|Ballade|Oton de Grandson|"Se je m'en dueil| nul ne m'en doyt blasmer"|vers|2e moitié du 14e s.|oil-français|||||""||temoin36050|72191|10013|vers 1430|A|intégral|Folio 144v - 145r|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36051|http://jonas.irht.cnrs.fr/oeuvre/10014|http://jonas.irht.cnrs.fr/manuscrit/72191|10014|Ballade|Oton de Grandson|Vous vueil servir tresamoureusement|vers|2e moitié du 14e s.|oil-français|||||""||temoin36051|72191|10014|vers 1430||intégral|Folio 145r - 145v|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36056|http://jonas.irht.cnrs.fr/oeuvre/10015|http://jonas.irht.cnrs.fr/manuscrit/72193|10015|Ballade|Oton de Grandson|Desloiaulté en l'amoureuse vye|vers|2e moitié du 14e s.|oil-français|||||""||temoin36056|72193|10015|vers 1430|A|intégral|Folio 145v - 146v|72193|"PHILADELPHIA| University of Pennsylvania Library| Codex 0902"|vers 1390|oil-français
+temoin36053|http://jonas.irht.cnrs.fr/oeuvre/10015|http://jonas.irht.cnrs.fr/manuscrit/72191|10015|Ballade|Oton de Grandson|Desloiaulté en l'amoureuse vye|vers|2e moitié du 14e s.|oil-français|||||""||temoin36053|72191|10015|vers 1430|A|intégral|Folio 145v - 146v|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36058|http://jonas.irht.cnrs.fr/oeuvre/10016|http://jonas.irht.cnrs.fr/manuscrit/71514|10016|Ballade|Oton de Grandson|"Plus m'escondit| plus la vueil tenir chiere"|vers|2e moitié du 14e s.|oil-français|||||""||temoin36058|71514|10016|vers 1430|A|intégral|Folio 146v - 147r|71514|"TORINO| Archivio di Stato| Biblioteca Antica Jb IX 10"|fin du 15e s.|
+temoin36054|http://jonas.irht.cnrs.fr/oeuvre/10016|http://jonas.irht.cnrs.fr/manuscrit/72191|10016|Ballade|Oton de Grandson|"Plus m'escondit| plus la vueil tenir chiere"|vers|2e moitié du 14e s.|oil-français|||||""||temoin36054|72191|10016|vers 1430|A|intégral|Folio 146v - 147r|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36057|http://jonas.irht.cnrs.fr/oeuvre/10016|http://jonas.irht.cnrs.fr/manuscrit/72193|10016|Ballade|Oton de Grandson|"Plus m'escondit| plus la vueil tenir chiere"|vers|2e moitié du 14e s.|oil-français|||||""||temoin36057|72193|10016|vers 1430|A|intégral|Folio 146v - 147r|72193|"PHILADELPHIA| University of Pennsylvania Library| Codex 0902"|vers 1390|oil-français
+temoin36059|http://jonas.irht.cnrs.fr/oeuvre/10017|http://jonas.irht.cnrs.fr/manuscrit/71514|10017|Ballade|Oton de Grandson|D'un tel amer que faire tous honnis|vers|2e moitié du 14e s.|oil-français|||||""||temoin36059|71514|10017|vers 1430|A|intégral|Folio 147r - 147v|71514|"TORINO| Archivio di Stato| Biblioteca Antica Jb IX 10"|fin du 15e s.|
+temoin36055|http://jonas.irht.cnrs.fr/oeuvre/10017|http://jonas.irht.cnrs.fr/manuscrit/72191|10017|Ballade|Oton de Grandson|D'un tel amer que faire tous honnis|vers|2e moitié du 14e s.|oil-français|||||""||temoin36055|72191|10017|vers 1430|A|intégral|Folio 147r - 147v|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36060|http://jonas.irht.cnrs.fr/oeuvre/10018|http://jonas.irht.cnrs.fr/manuscrit/72191|10018|Ballade|Oton de Grandson|"Foy| loiaulté| sans faulcer| vous tendray"|vers|2e moitié du 14e s.|oil-français|||||""||temoin36060|72191|10018|vers 1430|A|intégral|Folio 147v - 148r|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36061|http://jonas.irht.cnrs.fr/oeuvre/10019|http://jonas.irht.cnrs.fr/manuscrit/72191|10019|Ballade|Oton de Grandson|Or vueille Dieux que brefment le revoye|vers|2e moitié du 14e s.|oil-français|||||""||temoin36061|72191|10019|vers 1430||intégral|Folio 148r - 148v|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36062|http://jonas.irht.cnrs.fr/oeuvre/10020|http://jonas.irht.cnrs.fr/manuscrit/72191|10020|Ballade|Oton de Grandson|Don de mercy ainçois que on le deprie|vers|2e moitié du 14e s.|oil-français|||||""||temoin36062|72191|10020|vers 1430||intégral|Folio 148v - 149r|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français
+temoin36063|http://jonas.irht.cnrs.fr/oeuvre/10021|http://jonas.irht.cnrs.fr/manuscrit/72191|10021|Ballade|Oton de Grandson|Ainsy le fait cuer plain de faulceté|vers|2e moitié du 14e s.|oil-français|||||""||temoin36063|72191|10021|vers 1430||intégral|Folio 149v - 150r|72191|"LAUSANNE| Bibliothèque cantonale et universitaire| Ms 350"|vers 1430|oil-français

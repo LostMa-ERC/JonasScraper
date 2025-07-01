@@ -2,9 +2,8 @@ import importlib.metadata
 from pathlib import Path
 
 import click
-
-from src.manager.new_urls import NewUrls
-from src.manager.supplement import SupplementalURLs
+from jonas.manager.new_urls import NewUrls
+from jonas.manager.supplement import SupplementalURLs
 
 # This name must match the package name ('name' kwarg) in the TOML file.
 __identifier__ = importlib.metadata.version("jonas")

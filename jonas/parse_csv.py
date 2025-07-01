@@ -1,8 +1,7 @@
 import casanova
-
-from src.models.manuscript import Manuscript
-from src.models.work import Work
-from src.utils import parse_url
+from jonas.models.manuscript import Manuscript
+from jonas.models.work import Work
+from jonas.utils import parse_url
 
 
 def parse_csv(infile: str, column_name: str) -> set:

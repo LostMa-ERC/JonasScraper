@@ -1,15 +1,14 @@
 from collections import namedtuple
 
 import lxml.html
-
-from src.models.manuscript import Manuscript
-from src.models.work import Work
-from src.parsers.manuscript import (
+from jonas.models.manuscript import Manuscript
+from jonas.models.work import Work
+from jonas.parsers.manuscript import (
     ManuscriptScraper,
     iterate_witnesses_from_document,
 )
-from src.parsers.work import WorkScraper, iterate_witnesses_from_work
-from src.utils import parse_url
+from jonas.parsers.work import WorkScraper, iterate_witnesses_from_work
+from jonas.utils import parse_url
 
 PageResults = namedtuple("PageResults", field_names=["work", "witnesses", "manuscript"])
 

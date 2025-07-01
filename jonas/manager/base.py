@@ -2,12 +2,11 @@ from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
+from jonas.database.connection import Database
+from jonas.pool import Requester
+from jonas.progress import ProgressBar, Spinner, show_table_counts
+from jonas.scrape import scrape_html
 from rich.console import Console
-
-from src.database.connection import Database
-from src.pool import Requester
-from src.progress import ProgressBar, Spinner, show_table_counts
-from src.scrape import scrape_html
 
 
 class WorkFlowManager:
@@ -77,6 +76,7 @@ class WorkFlowManager:
         with Spinner(console=self.console, task="Writing output"):
             query = r"""
         SELECT
+            wt.id,
             concat('http://jonas.irht.cnrs.fr/oeuvre/', wt.work_id) as work_url,
             concat('http://jonas.irht.cnrs.fr/manuscrit/', wt.doc_id) as ms_url,
             columns(wk.*) as "work_\0",
@@ -95,5 +95,5 @@ class WorkFlowManager:
             result.write_csv(str(outfile))
 
             self.console.print(
-                f"view a list of witnesses in this CSV file: '{outfile.absolute()}'"
+                f"\nView a list of witnesses in this CSV file: '{outfile.absolute()}'"
             )
