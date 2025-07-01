@@ -4,7 +4,7 @@ from typing import List
 
 from pydantic import BaseModel
 
-from src.database.connection import Database
+from jonas.database.connection import Database
 
 
 class MockTable(BaseModel):

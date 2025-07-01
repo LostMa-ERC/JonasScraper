@@ -1,27 +1,19 @@
-import unittest
+import pytest
 
-from src.database.connection import Connection
-from src.pool import Requester
-from src.scrapers.work import WorkScraper
+from jonas.database.connection import Database
+from jonas.parsers.work import WorkScraper
+from jonas.pool import Requester
 
-WORK_URLS = [
-    "http://jonas.irht.cnrs.fr/oeuvre/13710",
-    "http://jonas.irht.cnrs.fr/oeuvre/5641",
-    "http://jonas.irht.cnrs.fr/oeuvre/9187",
-    "http://jonas.irht.cnrs.fr/oeuvre/13250",
-]
+URLS = pytest.urls
 
 
-class RequestTest(unittest.TestCase):
-    def test_work(self):
-        conn = Connection()
-        for url, html in Requester.pool_requests(urls=WORK_URLS):
-            work = WorkScraper(url=url, html=html)
-            model = work.validate()
-            conn.insert_model(table_name="Work", data=model)
+def test_works(progress_bar):
+    db = Database()
+    for url, html in Requester(progress_bar=progress_bar).pool_requests(urls=URLS):
+        work = WorkScraper(url=url, html=html)
+        model = work.validate()
+        db.insert_model(table_name="Work", data=model)
+        assert model.language == "oil-français"
 
-        print(conn._conn.table("Work"))
-
-
-if __name__ == "__main__":
-    unittest.main()
+    table_count = db.table("Work").count("*").fetchone()[0]
+    assert table_count == len(URLS)
