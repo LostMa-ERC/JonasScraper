@@ -1,11 +1,16 @@
-from typing import List
+from typing import Annotated
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, BeforeValidator, Field
+
+
+def join_list(value: list | None) -> str | None:
+    if isinstance(value, list):
+        return "|".join(value)
 
 
 class Work(BaseModel):
     id: str
-    title: str
+    title: str | None = Field(default=None)
     author: str | None = Field(default=None)
     incipit: str | None = Field(default=None)
     form: str | None = Field(default=None)
@@ -15,5 +20,5 @@ class Work(BaseModel):
     meter: str | None = Field(default=None)
     rhyme_scheme: str | None = Field(default=None)
     scripta: str | None = Field(default=None)
-    keywords: List[str | None] = Field(default=[])
-    links: List[str | None] = Field(default=[])
+    keywords: Annotated[str, BeforeValidator(join_list)] = Field(default=None)
+    links: Annotated[str, BeforeValidator(join_list)] = Field(default=None)

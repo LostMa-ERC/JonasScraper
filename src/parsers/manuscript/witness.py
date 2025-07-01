@@ -3,24 +3,27 @@ from typing import Generator
 from lxml import html
 
 from src.models.witness import Witness
-from src.scrapers.utils import Table, parse_id
+from src.parsers.utils import Table
+from src.utils import parse_id
 
 
 def iterate_witnesses_from_document(
     doc_id: str,
     doc_html: html.Element,
+    doc_date: str | None = None,
 ) -> Generator[Witness, None, None]:
     for block in doc_html.xpath("//div[@class='un_temoin']"):
-        wit = ManuscriptWitnessScraper(doc_id=doc_id, block=block)
+        wit = ManuscriptWitnessScraper(doc_id=doc_id, block=block, date=doc_date)
         model = wit.model()
         yield model
 
 
 class ManuscriptWitnessScraper:
-    def __init__(self, doc_id: str, block: html.Element):
+    def __init__(self, doc_id: str, block: html.Element, date: str | None):
         self.doc_id = doc_id
         self._html = block
         self._details = self._get_table()
+        self.date = date
 
     def _get_table(self) -> Table:
         return Table(class_name="contenu_temoin", is_from_div=True, html=self._html)
@@ -30,6 +33,7 @@ class ManuscriptWitnessScraper:
             id=self.id,
             doc_id=self.doc_id,
             work_id=self.work_id,
+            date=self.date,
             foliation=self.foliation,
             status=self.status,
             siglum=self.siglum,
@@ -52,10 +56,6 @@ class ManuscriptWitnessScraper:
     def foliation(self) -> str | None:
         matches = self._html.xpath("div[@class='temoin']/div[@class='reperage']/div")
         return matches[0].text.strip()
-
-    @property
-    def date(self) -> str | None:
-        return self._details.find_key("Date", class_name="dettem")
 
     @property
     def siglum(self) -> str | None:

@@ -2,7 +2,7 @@ import casanova
 
 from src.models.manuscript import Manuscript
 from src.models.work import Work
-from src.sorter import Sorter
+from src.utils import parse_url
 
 
 def parse_csv(infile: str, column_name: str) -> set:
@@ -10,7 +10,7 @@ def parse_csv(infile: str, column_name: str) -> set:
     with open(infile, "r") as f:
         reader = casanova.reader(f)
         for url in reader.cells(column_name):
-            id, url_type = Sorter.parse_url(url)
+            id, url_type = parse_url(url)
             if url_type == Work:
                 url_type = "Work"
                 canonic_url = f"http://jonas.irht.cnrs.fr/oeuvre/{id}"

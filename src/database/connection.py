@@ -17,7 +17,7 @@ TABLES = [
 ]
 
 
-class Connection:
+class Database:
     def __init__(
         self,
         database_path: str | None = None,
@@ -56,6 +56,34 @@ class Connection:
             else:
                 columns.append(f"{name} {dtype.upper()}")
         return f"CREATE TABLE {table_name} ({', '.join(columns)})"
+
+    def insert_csv(self, table_name: str, model: BaseModel, csv_file: str):
+
+        def compose_set_statement(col: str) -> str:
+            return f"""
+{col} = CASE WHEN EXCLUDED.{col} IS NULL THEN {col} ELSE EXCLUDED.{col} END
+            """
+
+        update_statement = ", ".join(
+            [
+                compose_set_statement(c)
+                for c in model.__annotations__.keys()
+                if c != "id"
+            ]
+        )
+        stmt = f"""
+INSERT INTO {table_name} SELECT * FROM read_csv('{csv_file}')
+ON CONFLICT DO UPDATE SET {update_statement}
+        """
+        try:
+            self._conn.execute(query=stmt)
+        except Exception as e:
+            print(stmt)
+            raise e
+
+        from rich import print
+
+        print("\n\nEND OF INSERT")
 
     def insert_model(self, table_name: str, data: BaseModel):
         data_dict = data.model_dump()

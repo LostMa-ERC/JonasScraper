@@ -1,7 +1,8 @@
 from lxml import html
 
 from src.models.work import Work
-from src.scrapers.utils import Table, clean, parse_id
+from src.parsers.utils import Table, clean
+from src.utils import parse_id
 
 
 class WorkScraper:

@@ -1,47 +1,58 @@
 import concurrent.futures
-import sys
+import logging
 import time
-import urllib.request
 import urllib.error
+import urllib.request
 from typing import Generator
-from rich.progress import Progress
 
 from lxml import html
+
+from src.progress import ProgressBar
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename="jonas.log", filemode="w", level=logging.ERROR)
 
 
 class Requester:
     def __init__(
         self,
+        progress_bar: ProgressBar,
         timeout: int = 50,
         throttle: bool = False,
-        progress_bar: Progress = None,
     ):
         self.timeout = timeout
         self.throttle = throttle
         self.p = progress_bar
 
-    def remove_task(self, url, t):
-        self.p.update(t, description=f"Scraping '{url}'", completed=1, visible=False)
-        self.p.remove_task(t)
+    def remove_task(self, t):
+        if self.p:
+            self.p.remove_task(t)
 
-    def retrieve_html(self, url: str) -> html.HtmlElement:
+    def retrieve_html(self, url: str) -> html.HtmlElement | None:
         if self.throttle:
             time.sleep(1)
         # Retrieve a single page and parse its HTML into an lxml.html Element
         if self.p:
-            t = self.p.add_task(f"Scraping '{url}'", total=1, visible=True, start=True)
+            t = self.p.add_task(
+                f"Scraping '{url}'",
+                total=1,
+                visible=True,
+                start=True,
+                progress_type="blue",
+            )
         try:
             with urllib.request.urlopen(url, timeout=self.timeout) as conn:
-                self.remove_task(url=url, t=t)
+                self.remove_task(t)
                 return html.fromstring(conn.read())
         except Exception as e:
-            self.remove_task(url=url, t=t)
-            raise e
+            msg = "\tURL: '%s'\tError: %s" % (url, e)
+            logger.error(msg=msg)
+            self.remove_task(t)
 
     def pool_requests(
         self,
         urls: list[str],
-        max_workers: int = 10,
+        max_workers: int = 3,
         max_errors: int = None,
     ) -> Generator[
         tuple[str, html.HtmlElement],
@@ -66,12 +77,11 @@ class Requester:
             future_url_index = {
                 executor.submit(self.retrieve_html, url): url for url in urls
             }
-
             for future in concurrent.futures.as_completed(future_url_index):
                 url = future_url_index[future]
                 try:
-                    data = future.result()
-                except TimeoutError:
+                    html_tree = future.result()
+                except TimeoutError as e:
                     error_count += 1
                     print(
                         "%r took too long to load. Error %s / %s"
@@ -80,13 +90,12 @@ class Requester:
                     if error_count > max_errors:
                         print("Too many errors. Exiting program...")
                         executor.shutdown(wait=True, cancel_futures=True)
-                        sys.exit()
+                        raise e
                 except urllib.error.URLError as e:
                     if "The handshake operation timed out" in e.reason:
-                        print("The internet connection wasn't good enough.\n%s" % (e))
+                        print("The internet connection wasn't good enough.")
                         executor.shutdown(wait=True, cancel_futures=True)
-                        sys.exit()
-                    else:
-                        raise e
-                else:
-                    yield url, data
+                    raise e
+
+                if html_tree is not None:
+                    yield url, html_tree

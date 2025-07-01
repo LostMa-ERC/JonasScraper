@@ -1,10 +1,10 @@
 import unittest
-
 from pathlib import Path
-
-from src.database.connection import Connection
-from pydantic import BaseModel
 from typing import List
+
+from pydantic import BaseModel
+
+from src.database.connection import Database
 
 
 class MockTable(BaseModel):
@@ -18,11 +18,11 @@ class DatabaseTest(unittest.TestCase):
     persistent_path = Path(__file__).parent.joinpath("test.db")
 
     def test_persistent_connection(self):
-        Connection(self.persistent_path)
+        Database(self.persistent_path)
         self.assertTrue(self.persistent_path.is_file())
 
     def test_create_statement(self):
-        actual = Connection.write_create_statement(
+        actual = Database.write_create_statement(
             table_name="MockTable", model=MockTable
         )
         expected = """CREATE TABLE \
@@ -31,7 +31,7 @@ MockTable (id STRING primary key, names STRING[], real BOOLEAN, nickname STRING)
         self.assertEqual(actual, expected)
 
     def test_insert_duplicate_data(self):
-        conn = Connection(tables=[("MockTable", MockTable)])
+        conn = Database(tables=[("MockTable", MockTable)])
         data = MockTable(**{"id": "123", "names": [], "real": True, "nickname": None})
         conn.insert_model(table_name="MockTable", data=data)
         actual = conn._conn.sql("SELECT real FROM MockTable").fetchone()[0]
@@ -44,7 +44,7 @@ MockTable (id STRING primary key, names STRING[], real BOOLEAN, nickname STRING)
         self.assertFalse(actual)
 
     def test_insert_duplicate_null_data(self):
-        conn = Connection(tables=[("MockTable", MockTable)])
+        conn = Database(tables=[("MockTable", MockTable)])
         data = MockTable(
             **{"id": "123", "names": [], "real": True, "nickname": "Jerry"}
         )
