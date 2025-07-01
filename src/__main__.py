@@ -40,7 +40,10 @@ def cli():
 )
 def scrape_new_urls(infile, outdir, column_name):
     # Compose a path to the database in the output directory
-    db_path = Path(outdir).joinpath("jonas.db")
+    outdir = Path(outdir)
+    db_path = outdir.joinpath("jonas.db")
+    if not outdir.is_dir():
+        outdir.mkdir()
 
     # Create an instance of the File Processor class
     fp = NewUrls(database_path=db_path)
