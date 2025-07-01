@@ -1,7 +1,8 @@
+from lxml import html
+
 from jonas.models.work import Work
 from jonas.parsers.utils import Table, clean
 from jonas.utils import parse_id
-from lxml import html
 
 
 class WorkScraper:

@@ -5,8 +5,9 @@ import urllib.error
 import urllib.request
 from typing import Generator
 
-from jonas.progress import ProgressBar
 from lxml import html
+
+from jonas.progress import ProgressBar
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename="jonas.log", filemode="w", level=logging.ERROR)

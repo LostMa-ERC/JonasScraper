@@ -2,6 +2,7 @@ import importlib.metadata
 from pathlib import Path
 
 import click
+
 from jonas.manager.new_urls import NewUrls
 from jonas.manager.supplement import SupplementalURLs
 

@@ -1,9 +1,10 @@
 from typing import Generator
 
+from lxml import html
+
 from jonas.models.witness import Witness
 from jonas.parsers.utils import Table
 from jonas.utils import parse_id
-from lxml import html
 
 
 def iterate_witnesses_from_work(
@@ -25,16 +26,18 @@ class WorkWitnessScraper:
     def __init__(self, work_id: str, block: html.Element):
         self.work_id = work_id
         self._html = block
-        self._top_table = self._get_first_table()
-        self._details = self._get_second_table()
+        self._top_table = self._get_header_table()
+        self._details = self._get_content_table()
 
-    def _get_first_table(self) -> html.Element:
+    def _get_header_table(self) -> html.Element:
         for wit in self._html.xpath("table[starts-with(@id, 'temoin')]"):
             self.id = wit.get("id")
             return wit
 
-    def _get_second_table(self) -> Table | None:
-        return Table(class_name="contenu_temoin", html=self._html, is_from_div=True)
+    def _get_content_table(self) -> Table | None:
+        content_tables = self._html.xpath("div[@class='contenu_temoin']/table")
+        if len(content_tables) == 1:
+            return Table(table=content_tables[0])
 
     def model(self) -> Witness:
         return Witness(

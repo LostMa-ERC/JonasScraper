@@ -2,11 +2,12 @@ from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
+from rich.console import Console
+
 from jonas.database.connection import Database
 from jonas.pool import Requester
 from jonas.progress import ProgressBar, Spinner, show_table_counts
 from jonas.scrape import scrape_html
-from rich.console import Console
 
 
 class WorkFlowManager:
@@ -67,9 +68,6 @@ class WorkFlowManager:
                     for witness in page.witnesses:
                         self.db.insert_model(table_name="Witness", data=witness)
                 self.show_title()
-
-        # Confirm that everything was
-        assert total == completed
 
     def write_output(self, outdir: Path):
         outdir = Path(outdir)

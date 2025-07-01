@@ -1,9 +1,10 @@
 import re
 
 import ural
+from pydantic import BaseModel
+
 from jonas.models.manuscript import Manuscript
 from jonas.models.work import Work
-from pydantic import BaseModel
 
 
 def parse_url(url: str) -> tuple[str | None, BaseModel | None]:

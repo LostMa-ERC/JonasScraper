@@ -1,8 +1,9 @@
 import duckdb
+from pydantic import BaseModel
+
 from jonas.models.manuscript import Manuscript
 from jonas.models.witness import Witness
 from jonas.models.work import Work
-from pydantic import BaseModel
 
 
 def get_duckdb_table_names(conn: duckdb.DuckDBPyConnection) -> list[str]:

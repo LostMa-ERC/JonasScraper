@@ -1,6 +1,7 @@
 from collections import namedtuple
 
 import lxml.html
+
 from jonas.models.manuscript import Manuscript
 from jonas.models.work import Work
 from jonas.parsers.manuscript import (
