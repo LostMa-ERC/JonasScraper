@@ -1,5 +1,5 @@
 [project]
-name = "jonas-scraper"
+name = "jonas"
 version = "0.0.1"
 description = "Scraper of work and manuscript metadata from the Jonas website."
 dynamic = ["readme"]

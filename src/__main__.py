@@ -7,7 +7,7 @@ from src.manager.new_urls import NewUrls
 from src.manager.supplement import SupplementalURLs
 
 # This name must match the package name ('name' kwarg) in the TOML file.
-__identifier__ = importlib.metadata.version("jonas-scraper")
+__identifier__ = importlib.metadata.version("jonas")
 
 
 @click.group()
