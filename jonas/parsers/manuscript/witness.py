@@ -26,7 +26,10 @@ class ManuscriptWitnessScraper:
         self.date = date
 
     def _get_table(self) -> Table:
-        return Table(class_name="contenu_temoin", is_from_div=True, html=self._html)
+        content_tables = self._html.xpath(
+            "div/div[@class='contenu_temoin']/table[@class='details']"
+        )
+        return Table(table=content_tables[0])
 
     def model(self) -> Witness:
         return Witness(

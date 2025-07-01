@@ -19,3 +19,20 @@ def test_manuscript_witnesses(progress_bar):
         assert wit.doc_id == ID
         if wit.foliation:
             assert wit.foliation.startswith("Folio")
+
+
+def test_work_witness_foliation(progress_bar):
+    url = "https://jonas.irht.cnrs.fr/manuscrit/72193"
+    html = Requester(progress_bar=progress_bar).retrieve_html(url=url)
+    doc = ManuscriptScraper(url=url, html=html)
+    witnesses = {
+        wit.work_id: wit
+        for wit in iterate_witnesses_from_document(
+            doc_id=doc.id, doc_html=html, doc_date=doc.date
+        )
+    }
+
+    test_witness = witnesses.get("3490")
+
+    assert test_witness.foliation == "Folio 8va - 10ra"
+    assert test_witness.siglum == "P"
