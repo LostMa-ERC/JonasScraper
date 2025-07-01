@@ -1,5 +1,7 @@
 from typing import Generator
 
+import duckdb
+import termplotlib as tpl
 from rich.console import Console
 from rich.progress import (
     BarColumn,
@@ -53,3 +55,20 @@ class ProgressBar(Progress):
                     TimeElapsedColumn(),
                 )
             yield self.make_tasks_table([task])
+
+
+def show_table_counts(conn: duckdb.DuckDBPyConnection, console: Console) -> None:
+    rel = conn.sql(
+        """
+    select
+        count(distinct(work_id)) as works,
+        count(distinct(doc_id)) as manuscripts,
+        count(*) as witnesses
+    from Witness
+    """
+    )
+
+    counts = rel.fetchall()[0]
+    fig = tpl.figure()
+    fig.barh(counts, rel.columns, force_ascii=True)
+    console.print(fig)

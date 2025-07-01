@@ -3,13 +3,15 @@ from pathlib import Path
 
 import click
 
-from src.cli.file import FileProcessor
+from src.manager.new_urls import NewUrls
+from src.manager.supplement import SupplementalURLs
 
 # This name must match the package name ('name' kwarg) in the TOML file.
-__identifier__ = importlib.metadata.version("jonas-scraper")
+__identifier__ = importlib.metadata.version("jonas")
 
 
 @click.group()
+@click.version_option(__identifier__)
 def cli():
     pass
 
@@ -17,7 +19,7 @@ def cli():
 # -------------------------------
 # Scrape from CSV
 # -------------------------------
-@cli.command("new")
+@cli.command("new-urls")
 @click.option(
     "-i",
     "--infile",
@@ -41,10 +43,10 @@ def scrape_new_urls(infile, outdir, column_name):
     db_path = Path(outdir).joinpath("jonas.db")
 
     # Create an instance of the File Processor class
-    fp = FileProcessor(database_path=db_path)
+    fp = NewUrls(database_path=db_path)
 
     # Run the steps of processing a CSV file
-    fp.scrape_infile_urls(infile=infile, column=column_name)
+    fp.scrape(infile=infile, column=column_name)
     fp.write_output(outdir=outdir)
 
 
@@ -67,10 +69,10 @@ def supplement_existing_urls(database_path, outdir):
         database_path = Path(outdir).joinpath("jonas.db")
 
     # Create an instance of the File Processor class
-    fp = FileProcessor(database_path=database_path)
+    fp = SupplementalURLs(database_path=database_path)
 
     # Run the steps of supplementing a database's existing data
-    fp.scrape_supplemental_urls()
+    fp.scrape()
     fp.write_output(outdir=outdir)
 
 
