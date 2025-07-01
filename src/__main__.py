@@ -39,11 +39,13 @@ def cli():
     required=True,
 )
 def scrape_new_urls(infile, outdir, column_name):
-    # Compose a path to the database in the output directory
+    # Create the output directory if it doesn't exist
     outdir = Path(outdir)
+    outdir.mkdir(exist_ok=True)
+    assert outdir.is_dir()
+
+    # Compose a path to the database in the output directory
     db_path = outdir.joinpath("jonas.db")
-    if not outdir.is_dir():
-        outdir.mkdir()
 
     # Create an instance of the File Processor class
     fp = NewUrls(database_path=db_path)
