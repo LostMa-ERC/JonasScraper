@@ -12,7 +12,7 @@ from jonas.scrape import scrape_html
 
 class WorkFlowManager:
 
-    chunk_size = 21
+    chunk_size = 25
     completed = 0
 
     def __init__(self, database_path: str = ":memory:") -> None:

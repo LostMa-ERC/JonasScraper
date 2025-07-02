@@ -52,7 +52,7 @@ class Requester:
     def pool_requests(
         self,
         urls: list[str],
-        max_workers: int = 3,
+        max_workers: int = 5,
         max_errors: int = None,
     ) -> Generator[
         tuple[str, html.HtmlElement],
