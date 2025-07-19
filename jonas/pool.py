@@ -10,7 +10,7 @@ from lxml import html
 from jonas.progress import ProgressBar
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(filename="jonas.log", filemode="w", level=logging.ERROR)
+logging.basicConfig(filename="jonas.log", filemode="a", level=logging.ERROR)
 
 
 class Requester:
